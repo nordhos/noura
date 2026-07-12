@@ -21,7 +21,7 @@ export function TotalIncomeCard({ amount }: { amount: number }) {
         ) : (
           <DotMask count={11} />
         )}
-        <span className="mx-4 h-8 w-px shrink-0 bg-border" aria-hidden="true" />
+        
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent">
           <PiggyBank size={20} />
         </span>

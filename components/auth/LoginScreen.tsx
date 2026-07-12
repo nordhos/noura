@@ -20,7 +20,7 @@ export function LoginScreen() {
       setStatus('checking');
       const ok = await checkPin(pin);
       if (ok) {
-        router.push('/dashboard');
+        router.replace("/dashboard");
         return;
       }
       setStatus('error');
