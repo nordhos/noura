@@ -1,9 +1,13 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
 import { formatIDR } from "@/lib/format-currency";
+import { useDeleteTransaction } from "@/hooks/useTransactions";
 
 interface TransactionItemProps {
+  id: string;
   type: "income" | "expense";
   category: string;
   profile: string;
@@ -12,6 +16,7 @@ interface TransactionItemProps {
 }
 
 export function TransactionItem({
+  id,
   type,
   category,
   profile,
@@ -19,6 +24,22 @@ export function TransactionItem({
   date,
 }: TransactionItemProps) {
   const income = type === "income";
+
+  const mutation = useDeleteTransaction();
+
+  async function handleDelete() {
+    try {
+      await mutation.mutateAsync(id);
+
+      toast.success(
+        "Transaksi berhasil dihapus."
+      );
+    } catch {
+      toast.error(
+        "Gagal menghapus transaksi."
+      );
+    }
+  }
 
   return (
     <div className="flex items-center justify-between py-3">
@@ -53,16 +74,29 @@ export function TransactionItem({
 
       </div>
 
-      <p
-        className={`font-semibold ${
-          income
-            ? "text-emerald-400"
-            : "text-red-400"
-        }`}
-      >
-        {income ? "+" : "-"}
-        {formatIDR(amount)}
-      </p>
+      <div className="flex items-center gap-3">
+
+        <p
+          className={`font-semibold ${
+            income
+              ? "text-emerald-400"
+              : "text-red-400"
+          }`}
+        >
+          {income ? "+" : "-"}
+          {formatIDR(amount)}
+        </p>
+
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={mutation.isPending}
+          className="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-800 hover:text-red-400"
+        >
+          <Trash2 size={17} />
+        </button>
+
+      </div>
 
     </div>
   );

@@ -65,7 +65,8 @@ export default function TransactionPage() {
 
           {data.map((item) => (
             <TransactionItem
-              key={item.id}
+            id={item.id}
+            key={item.id}
               type={item.type}
               category={
                 item.transaction_categories?.name ??

@@ -120,3 +120,16 @@ export async function getRecentTransactions() {
   
     return data ?? [];
   }
+
+  export async function deleteTransaction(
+    id: string
+  ) {
+    const { error } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("id", id);
+  
+    if (error) {
+      throw error;
+    }
+  }

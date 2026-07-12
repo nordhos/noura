@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Wallet, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MonthSelector } from "@/components/dashboard/MonthSelector";
 import { IncomeCard } from "@/components/dashboard/IncomeCard";
@@ -81,14 +80,12 @@ export default function DashboardPage() {
 
           <IncomeCard
             label="Penghasilan Suami"
-            icon={Wallet}
             amount={data.incomes.husband}
             progress={husbandProgress}
           />
 
           <IncomeCard
             label="Penghasilan Istri"
-            icon={Users}
             amount={data.incomes.wife}
             progress={wifeProgress}
           />
