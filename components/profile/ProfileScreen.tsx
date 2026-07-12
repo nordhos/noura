@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { navItems } from "@/lib/mock-data";
 
 import {
   ArrowLeft,
@@ -58,71 +60,73 @@ export function ProfileScreen() {
       (item) =>
         item.role === "wife"
     ) ?? null;
-    return (
-      <>
-        <main className="mx-auto w-full max-w-md space-y-6 px-5 pb-28 pt-6">
-  
-          <header className="flex items-center gap-3">
-  
-            <Link
-              href="/dashboard"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950"
-            >
-              <ArrowLeft size={18} />
-            </Link>
-  
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                Profil
-              </h1>
-  
-              <p className="mt-1 text-sm text-zinc-400">
-                Konfigurasi Keuangan
-              </p>
-            </div>
-  
-          </header>
-  
-          {husband && (
-            <ProfileCard
-              title="Suami"
-              icon={
-                <User
-                  size={22}
-                  className="text-orange-400"
-                />
-              }
-              accent="bg-orange-500/10"
-              profile={husband}
-              onEdit={() =>
-                openEditor(husband)
-              }
-            />
-          )}
-  
-          {wife && (
-            <ProfileCard
-              title="Istri"
-              icon={
-                <Wallet
-                  size={22}
-                  className="text-pink-400"
-                />
-              }
-              accent="bg-pink-500/10"
-              profile={wife}
-              onEdit={() =>
-                openEditor(wife)
-              }
-            />
-          )}
-                  <EditProfileSheet
+  return (
+    <>
+      <main className="mx-auto w-full max-w-md space-y-6 px-5 pb-28 pt-6">
+
+        <header className="flex items-center gap-3">
+
+          <Link
+            href="/dashboard"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950"
+          >
+            <ArrowLeft size={18} />
+          </Link>
+
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              Profil
+            </h1>
+
+            <p className="mt-1 text-sm text-zinc-400">
+              Konfigurasi Keuangan
+            </p>
+          </div>
+
+        </header>
+
+        {husband && (
+          <ProfileCard
+            title="Suami"
+            icon={
+              <User
+                size={22}
+                className="text-orange-400"
+              />
+            }
+            accent="bg-orange-500/10"
+            profile={husband}
+            onEdit={() =>
+              openEditor(husband)
+            }
+          />
+        )}
+
+        {wife && (
+          <ProfileCard
+            title="Istri"
+            icon={
+              <Wallet
+                size={22}
+                className="text-pink-400"
+              />
+            }
+            accent="bg-pink-500/10"
+            profile={wife}
+            onEdit={() =>
+              openEditor(wife)
+            }
+          />
+        )}
+                <EditProfileSheet
           open={sheetOpen}
           profile={selectedProfile}
           onClose={closeEditor}
         />
 
       </main>
+
+      <BottomNav items={navItems} />
     </>
   );
 }
@@ -178,7 +182,7 @@ function ProfileCard({
       </div>
 
       <div className="space-y-4">
-      <PersonCard
+        <PersonCard
           label="Nama"
           value={profile.name}
         />

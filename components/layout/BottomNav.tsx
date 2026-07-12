@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 import type { NavItem as NavItemType } from "@/lib/types";
 
@@ -23,8 +24,19 @@ export function BottomNav({
   const [incomeOpen, setIncomeOpen] = useState(false);
 const [expenseOpen, setExpenseOpen] = useState(false);
 
-  const left = items.slice(0, 2);
-  const right = items.slice(2, 4);
+const left = items.slice(0, 2);
+const right = items.slice(2, 4);
+
+const mappedRight = right.map((item) => {
+  if (item.label === "Laporan") {
+    return {
+      ...item,
+      href: "#",
+    };
+  }
+
+  return item;
+});
 
   return (
     <>
@@ -44,13 +56,34 @@ const [expenseOpen, setExpenseOpen] = useState(false);
 
           <div />
 
-          {right.map((item) => (
-            <NavItem
-              key={item.id}
-              {...item}
-              active={pathname === item.href}
-            />
-          ))}
+          {mappedRight.map((item) => {
+  if (item.label === "Laporan") {
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() =>
+          toast.info("Dalam proses pengembangan.")
+        }
+        className="flex flex-col items-center justify-center gap-1 text-ink-faint transition hover:text-white"
+      >
+        <item.icon size={22} />
+
+        <span className="text-xs">
+          {item.label}
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <NavItem
+      key={item.id}
+      {...item}
+      active={pathname === item.href}
+    />
+  );
+})}
 
           <button
             type="button"
