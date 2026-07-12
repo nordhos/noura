@@ -25,6 +25,12 @@ interface TransactionFormProps {
   onSuccess?: () => void;
 }
 
+function getTodayIndonesia() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+  }).format(new Date());
+}
+
 export function TransactionForm({
   type,
   onSuccess,
@@ -51,7 +57,7 @@ export function TransactionForm({
     useState(false);
 
   const transactionDate =
-    new Date().toISOString().slice(0, 10);
+    getTodayIndonesia();
 
   async function handleSubmit() {
 
@@ -185,8 +191,8 @@ export function TransactionForm({
         {mutation.isPending
           ? "Menyimpan..."
           : type === "income"
-          ? "Simpan Penghasilan"
-          : "Simpan Pengeluaran"}
+            ? "Simpan Penghasilan"
+            : "Simpan Pengeluaran"}
       </Button>
 
     </div>

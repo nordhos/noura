@@ -10,31 +10,35 @@ export interface TransactionPayload {
 }
 
 export async function createTransaction(
-  payload: TransactionPayload
-) {
-  const date = new Date(payload.transactionDate);
-
-  const { data, error } = await supabase
-    .from("transactions")
-    .insert({
-      profile_id: payload.profileId,
-      category_id: payload.categoryId,
-      type: payload.type,
-      amount: payload.amount,
-      description: payload.description,
-      transaction_date: payload.transactionDate,
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
+    payload: TransactionPayload
+  ) {
+  
+    const [year, month] = payload.transactionDate
+      .split("-")
+      .map(Number);
+  
+    const { data, error } = await supabase
+      .from("transactions")
+      .insert({
+        profile_id: payload.profileId,
+        category_id: payload.categoryId,
+        type: payload.type,
+        amount: payload.amount,
+        description: payload.description,
+        transaction_date: payload.transactionDate,
+        year,
+        month,
+      })
+      .select()
+      .single();
+  
+    if (error) {
+      console.error(error);
+      throw error;
+    }
+  
+    return data;
   }
-
-  return data;
-}
 
 export async function getTransactions(
   year: number,
@@ -58,8 +62,11 @@ export async function getTransactions(
     .eq("year", year)
     .eq("month", month)
     .order("transaction_date", {
-      ascending: false,
-    });
+        ascending: false,
+      })
+      .order("created_at", {
+        ascending: false,
+      });
 
   if (error) {
     throw error;
@@ -87,6 +94,9 @@ export async function getRecentTransactions() {
       .order("transaction_date", {
         ascending: false,
       })
+      .order("created_at", {
+        ascending: false,
+      })
       .limit(5);
   
     if (error) throw error;
@@ -111,6 +121,9 @@ export async function getRecentTransactions() {
         )
       `)
       .order("transaction_date", {
+        ascending: false,
+      })
+      .order("created_at", {
         ascending: false,
       });
   
