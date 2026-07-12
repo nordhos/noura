@@ -14,7 +14,7 @@ export async function createTransaction(
 ) {
   const date = new Date(payload.transactionDate);
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("transactions")
     .insert({
       profile_id: payload.profileId,
@@ -25,9 +25,15 @@ export async function createTransaction(
       transaction_date: payload.transactionDate,
       year: date.getFullYear(),
       month: date.getMonth() + 1,
-    });
+    })
+    .select()
+    .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
 export async function getTransactions(
@@ -38,8 +44,16 @@ export async function getTransactions(
     .from("transactions")
     .select(`
       *,
-      profiles(name, role),
-      transaction_categories(name, icon, color)
+      profiles (
+        name,
+        role
+      ),
+      transaction_categories (
+        name,
+        icon,
+        color,
+        type
+      )
     `)
     .eq("year", year)
     .eq("month", month)
@@ -47,7 +61,9 @@ export async function getTransactions(
       ascending: false,
     });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data ?? [];
 }

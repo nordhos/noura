@@ -17,12 +17,12 @@ export function TransactionSheet({
   return (
     <BottomSheet
       open={open}
+      onClose={onClose}
       title={
         type === "income"
           ? "Catat Penghasilan"
           : "Catat Pengeluaran"
       }
-      onClose={onClose}
     >
       <TransactionForm
         type={type}

@@ -1,26 +1,9 @@
 import { supabase } from "@/lib/supabase";
 
 export interface DashboardSummary {
-  month: {
-    id: string;
-    year: number;
-    month: number;
-    label: string;
-  };
-
   incomes: {
-    husband: {
-      main: number;
-      extra: number;
-      total: number;
-    };
-
-    wife: {
-      main: number;
-      extra: number;
-      total: number;
-    };
-
+    husband: number;
+    wife: number;
     total: number;
   };
 
@@ -38,65 +21,74 @@ export interface DashboardSummary {
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const now = new Date();
 
-  const { data: month, error: monthError } = await supabase
-    .from("months")
-    .select("*")
-    .eq("year", now.getFullYear())
-    .eq("month", now.getMonth() + 1)
-    .single();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
 
-  if (monthError) throw monthError;
+  // ==========================
+  // PROFILES
+  // ==========================
 
-  const { data: expenses, error: expenseError } = await supabase
-    .from("expenses")
-    .select("amount")
-    .eq("month_id", month.id);
+  const { data: profiles, error: profileError } =
+    await supabase
+      .from("profiles")
+      .select("*");
 
-  if (expenseError) throw expenseError;
+  if (profileError) throw profileError;
 
-  const husbandMain = Number(month.husband_main);
-  const husbandExtra = Number(month.husband_extra);
+  const husband =
+    profiles?.find(
+      (item) => item.role === "husband"
+    );
 
-  const wifeMain = Number(month.wife_main);
-  const wifeExtra = Number(month.wife_extra);
+  const wife =
+    profiles?.find(
+      (item) => item.role === "wife"
+    );
 
-  const husbandTotal = husbandMain + husbandExtra;
-  const wifeTotal = wifeMain + wifeExtra;
+  const husbandSalary =
+    Number(husband?.salary ?? 0);
 
-  const totalIncome = husbandTotal + wifeTotal;
+  const wifeSalary =
+    Number(wife?.salary ?? 0);
+
+  const totalIncome =
+    husbandSalary + wifeSalary;
+
+  // ==========================
+  // TRANSACTIONS
+  // ==========================
+
+  const {
+    data: transactions,
+    error: transactionError,
+  } = await supabase
+    .from("transactions")
+    .select("amount,type")
+    .eq("year", year)
+    .eq("month", month);
+
+  if (transactionError) {
+    throw transactionError;
+  }
 
   const totalExpense =
-    expenses?.reduce((sum, item) => sum + Number(item.amount), 0) ?? 0;
+    transactions
+      ?.filter(
+        (item) => item.type === "expense"
+      )
+      .reduce(
+        (sum, item) =>
+          sum + Number(item.amount),
+        0
+      ) ?? 0;
 
-  const balance = totalIncome - totalExpense;
+  const balance =
+    totalIncome - totalExpense;
 
   return {
-    month: {
-      id: month.id,
-      year: month.year,
-      month: month.month,
-      label: new Date(month.year, month.month - 1).toLocaleDateString(
-        "id-ID",
-        {
-          month: "long",
-          year: "numeric",
-        }
-      ),
-    },
-
     incomes: {
-      husband: {
-        main: husbandMain,
-        extra: husbandExtra,
-        total: husbandTotal,
-      },
-
-      wife: {
-        main: wifeMain,
-        extra: wifeExtra,
-        total: wifeTotal,
-      },
-
+      husband: husbandSalary,
+      wife: wifeSalary,
       total: totalIncome,
     },
 
@@ -105,7 +97,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       percentage:
         totalIncome === 0
           ? 0
-          : Math.round((totalExpense / totalIncome) * 100),
+          : Math.round(
+              (totalExpense /
+                totalIncome) *
+                100
+            ),
     },
 
     balance: {
@@ -113,7 +109,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       percentage:
         totalIncome === 0
           ? 0
-          : Math.round((balance / totalIncome) * 100),
+          : Math.round(
+              (balance /
+                totalIncome) *
+                100
+            ),
     },
   };
 }

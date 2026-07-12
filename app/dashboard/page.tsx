@@ -45,14 +45,14 @@ export default function DashboardPage() {
     data.incomes.total === 0
       ? 0
       : Math.round(
-          (data.incomes.husband.total / data.incomes.total) * 100
+          (data.incomes.husband / data.incomes.total) * 100
         );
 
   const wifeProgress =
     data.incomes.total === 0
       ? 0
       : Math.round(
-          (data.incomes.wife.total / data.incomes.total) * 100
+          (data.incomes.wife / data.incomes.total) * 100
         );
 
   return (
@@ -72,14 +72,14 @@ export default function DashboardPage() {
           <IncomeCard
             label="Penghasilan Suami"
             icon={Wallet}
-            amount={data.incomes.husband.total}
+            amount={data.incomes.husband}
             progress={husbandProgress}
           />
 
           <IncomeCard
             label="Penghasilan Istri"
             icon={Users}
-            amount={data.incomes.wife.total}
+            amount={data.incomes.wife}
             progress={wifeProgress}
           />
 

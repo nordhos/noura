@@ -26,13 +26,17 @@ export function useCreateTransaction() {
       createTransaction(payload),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["transactions"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["dashboard"],
-      });
-    },
+        queryClient.invalidateQueries({
+          queryKey: ["transactions"],
+        });
+      
+        queryClient.invalidateQueries({
+          queryKey: ["dashboard"],
+        });
+      
+        queryClient.invalidateQueries({
+          queryKey: ["profiles"],
+        });
+      },
   });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
@@ -26,21 +27,88 @@ interface TransactionFormProps {
 
 export function TransactionForm({
   type,
+  onSuccess,
 }: TransactionFormProps) {
   const { data: profiles = [] } = useProfiles();
-  const { data: categories = [] } = useCategories(type);
+  const { data: categories = [] } =
+    useCategories(type);
 
-  useCreateTransaction();
+  const mutation = useCreateTransaction();
 
-  const [profileId, setProfileId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
+  const [profileId, setProfileId] =
+    useState("");
 
-  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [categoryId, setCategoryId] =
+    useState("");
+
+  const [amount, setAmount] =
+    useState("");
+
+  const [description, setDescription] =
+    useState("");
+
+  const [categoryOpen, setCategoryOpen] =
+    useState(false);
+
+  const transactionDate =
+    new Date().toISOString().slice(0, 10);
+
+  async function handleSubmit() {
+
+    if (!profileId) {
+      toast.error("Pilih penerima");
+      return;
+    }
+
+    if (!categoryId) {
+      toast.error("Pilih kategori");
+      return;
+    }
+
+    if (!amount) {
+      toast.error("Masukkan nominal");
+      return;
+    }
+
+    try {
+
+      await mutation.mutateAsync({
+        profileId,
+        categoryId,
+        type,
+        amount: Number(amount),
+        description,
+        transactionDate,
+      });
+
+      toast.success(
+        type === "income"
+          ? "Penghasilan berhasil disimpan"
+          : "Pengeluaran berhasil disimpan"
+      );
+
+      setProfileId("");
+      setCategoryId("");
+      setAmount("");
+      setDescription("");
+
+      onSuccess?.();
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        "Gagal menyimpan transaksi"
+      );
+
+    }
+
+  }
 
   return (
     <div className="space-y-6">
+
       <ProfileSelector
         value={profileId}
         profiles={profiles}
@@ -50,25 +118,33 @@ export function TransactionForm({
       <PickerField
         label="Kategori"
         value={
-          categories.find((c) => c.id === categoryId)?.name ??
-          "Pilih kategori"
+          categories.find(
+            c => c.id === categoryId
+          )?.name ?? "Pilih kategori"
         }
-        onClick={() => setCategoryOpen(true)}
+        onClick={() =>
+          setCategoryOpen(true)
+        }
       />
 
       <PickerSheet
         open={categoryOpen}
         title="Pilih Kategori"
         value={categoryId}
-        options={categories.map((item) => ({
-          value: item.id,
-          label: item.name,
-        }))}
-        onClose={() => setCategoryOpen(false)}
+        options={categories.map(
+          item => ({
+            value: item.id,
+            label: item.name,
+          })
+        )}
+        onClose={() =>
+          setCategoryOpen(false)
+        }
         onSelect={setCategoryId}
       />
 
       <FormField>
+
         <Label>Nominal</Label>
 
         <Input
@@ -76,27 +152,43 @@ export function TransactionForm({
           inputMode="numeric"
           value={formatIDRInput(amount)}
           onChange={(e) =>
-            setAmount(parseIDRInput(e.target.value))
+            setAmount(
+              parseIDRInput(
+                e.target.value
+              )
+            )
           }
         />
+
       </FormField>
 
       <FormField>
+
         <Label>Keterangan</Label>
 
         <Input
           value={description}
           onChange={(e) =>
-            setDescription(e.target.value)
+            setDescription(
+              e.target.value
+            )
           }
         />
+
       </FormField>
 
-      <Button type="button">
-        {type === "income"
+      <Button
+        type="button"
+        disabled={mutation.isPending}
+        onClick={handleSubmit}
+      >
+        {mutation.isPending
+          ? "Menyimpan..."
+          : type === "income"
           ? "Simpan Penghasilan"
           : "Simpan Pengeluaran"}
       </Button>
+
     </div>
   );
 }
