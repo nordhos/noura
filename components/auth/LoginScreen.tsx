@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { LoginHeader } from './LoginHeader';
 import { PinDots } from './PinDots';
 import { Keypad } from './Keypad';
-import { FingerprintButton } from './FingerprintButton';
 import { usePinInput } from './use-pin-input';
 import { mockUser, checkPin } from '@/lib/mock-user';
 
@@ -40,26 +39,39 @@ export function LoginScreen() {
   });
   resetRef.current = reset;
 
-  const handleFingerprint = () => {
-    // Demo shortcut — see FingerprintButton for what real biometric wiring looks like.
-    router.push('/dashboard');
-  };
-
   return (
-    <main className="flex min-h-screen flex-1 flex-col justify-between px-6 py-16">
-      <div className="flex flex-1 flex-col items-center justify-center gap-10">
+    <main className="flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="flex w-full max-w-sm flex-col items-center">
+  
         <LoginHeader userName={mockUser.name} />
-
-        <div className="flex flex-col items-center gap-6">
-          <p className="text-xs font-medium tracking-[0.2em] text-ink-faint">MASUKKAN PIN</p>
-          <PinDots length={PIN_LENGTH} filled={digits.length} error={status === 'error'} />
-          {status === 'error' && <p className="-mt-3 text-sm text-red-400">PIN salah, coba lagi</p>}
+  
+        <div className="mt-14 flex flex-col items-center gap-6">
+          <p className="text-xs font-medium tracking-[0.2em] text-ink-faint">
+            MASUKKAN PIN
+          </p>
+  
+          <PinDots
+            length={PIN_LENGTH}
+            filled={digits.length}
+            error={status === "error"}
+          />
+  
+          {status === "error" && (
+            <p className="-mt-3 text-sm text-red-400">
+              PIN salah, coba lagi
+            </p>
+          )}
         </div>
-
-        <Keypad onDigit={press} onBackspace={backspace} disabled={status !== 'idle'} />
+  
+        <div className="mt-10">
+          <Keypad
+            onDigit={press}
+            onBackspace={backspace}
+            disabled={status !== "idle"}
+          />
+        </div>
+  
       </div>
-
-      <FingerprintButton onPress={handleFingerprint} disabled={status !== 'idle'} />
     </main>
   );
 }
