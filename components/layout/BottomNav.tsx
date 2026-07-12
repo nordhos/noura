@@ -21,6 +21,7 @@ export function BottomNav({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [incomeOpen, setIncomeOpen] = useState(false);
+const [expenseOpen, setExpenseOpen] = useState(false);
 
   const left = items.slice(0, 2);
   const right = items.slice(2, 4);
@@ -67,14 +68,19 @@ export function BottomNav({
   open={menuOpen}
   onClose={() => setMenuOpen(false)}
   onIncome={() => setIncomeOpen(true)}
-  onExpense={() => {
-    // sementara tetap kosong
-  }}
+  onExpense={() => setExpenseOpen(true)}
 />
 
 <TransactionSheet
+  type="income"
   open={incomeOpen}
   onClose={() => setIncomeOpen(false)}
+/>
+
+<TransactionSheet
+  type="expense"
+  open={expenseOpen}
+  onClose={() => setExpenseOpen(false)}
 />
     </>
   );
