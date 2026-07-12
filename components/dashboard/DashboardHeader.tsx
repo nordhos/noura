@@ -2,14 +2,15 @@
 
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import { IconButton } from "@/components/ui/IconButton";
 import { Logomark } from "@/components/ui/Logomark";
+import { logout } from "@/hooks/useAuth";
 
 export function DashboardHeader() {
   const router = useRouter();
 
   function handleLogout() {
+    logout();
     router.replace("/");
   }
 

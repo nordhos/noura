@@ -7,6 +7,7 @@ import { PinDots } from './PinDots';
 import { Keypad } from './Keypad';
 import { usePinInput } from './use-pin-input';
 import { mockUser, checkPin } from '@/lib/mock-user';
+import { login } from "@/hooks/useAuth";
 
 const PIN_LENGTH = 6;
 
@@ -20,6 +21,7 @@ export function LoginScreen() {
       setStatus('checking');
       const ok = await checkPin(pin);
       if (ok) {
+        login();
         router.replace("/dashboard");
         return;
       }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Wallet, Users } from "lucide-react";
-
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MonthSelector } from "@/components/dashboard/MonthSelector";
 import { IncomeCard } from "@/components/dashboard/IncomeCard";
@@ -11,6 +10,9 @@ import { ExpenseSummaryCard } from "@/components/dashboard/ExpenseSummaryCard";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { BottomNav } from "@/components/layout/BottomNav";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { isAuthenticated } from "@/hooks/useAuth";
 
 import {
   monthOptions,
@@ -21,6 +23,13 @@ import { useDashboard } from "@/hooks/useDashboard";
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace("/");
+    }
+  }, [router]);
 
   const [month, setMonth] = useState(
     monthOptions[monthOptions.length - 1]
@@ -46,15 +55,15 @@ export default function DashboardPage() {
     data.incomes.total === 0
       ? 0
       : Math.round(
-          (data.incomes.husband / data.incomes.total) * 100
-        );
+        (data.incomes.husband / data.incomes.total) * 100
+      );
 
   const wifeProgress =
     data.incomes.total === 0
       ? 0
       : Math.round(
-          (data.incomes.wife / data.incomes.total) * 100
-        );
+        (data.incomes.wife / data.incomes.total) * 100
+      );
 
   return (
     <>

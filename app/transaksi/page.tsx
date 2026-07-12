@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -8,8 +10,17 @@ import { TransactionItem } from "@/components/dashboard/TransactionItem";
 
 import { navItems } from "@/lib/mock-data";
 import { useAllTransactions } from "@/hooks/useTransactions";
+import { isAuthenticated } from "@/hooks/useAuth";
 
 export default function TransactionPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace("/");
+    }
+  }, [router]);
+
   const {
     data = [],
     isLoading,
