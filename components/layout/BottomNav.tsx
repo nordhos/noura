@@ -8,6 +8,7 @@ import type { NavItem as NavItemType } from "@/lib/types";
 
 import { NavItem } from "./NavItem";
 import { FloatingActionMenu } from "./FloatingActionMenu";
+import { IncomeBottomSheet } from "@/components/dashboard/IncomeBottomSheet";
 
 interface BottomNavProps {
   items: NavItemType[];
@@ -18,7 +19,8 @@ export function BottomNav({
 }: BottomNavProps) {
   const pathname = usePathname();
 
-  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [incomeOpen, setIncomeOpen] = useState(false);
 
   const left = items.slice(0, 2);
   const right = items.slice(2, 4);
@@ -52,7 +54,7 @@ export function BottomNav({
           <button
             type="button"
             aria-label="Menu Cepat"
-            onClick={() => setOpen(true)}
+            onClick={() => setMenuOpen(true)}
             className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent text-black shadow-fab transition-transform hover:scale-105"
           >
             <Plus size={26} />
@@ -62,8 +64,18 @@ export function BottomNav({
       </nav>
 
       <FloatingActionMenu
-        open={open}
-        onClose={() => setOpen(false)}
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onIncome={() => setIncomeOpen(true)}
+        onExpense={() => {
+          // sementara tetap kosong
+          // nanti kita buat ExpenseBottomSheet
+        }}
+      />
+
+      <IncomeBottomSheet
+        open={incomeOpen}
+        onClose={() => setIncomeOpen(false)}
       />
     </>
   );

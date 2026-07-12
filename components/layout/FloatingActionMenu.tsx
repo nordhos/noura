@@ -1,16 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { Wallet, Plus, X } from "lucide-react";
 
 interface FloatingActionMenuProps {
   open: boolean;
   onClose: () => void;
+  onIncome: () => void;
+  onExpense: () => void;
 }
 
 export function FloatingActionMenu({
   open,
   onClose,
+  onIncome,
+  onExpense,
 }: FloatingActionMenuProps) {
   if (!open) return null;
 
@@ -44,6 +47,7 @@ export function FloatingActionMenu({
 
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-4">
+
             <h2 className="text-lg font-semibold text-white">
               Pilih
             </h2>
@@ -67,16 +71,23 @@ export function FloatingActionMenu({
             >
               <X size={18} />
             </button>
+
           </div>
 
           {/* Menu */}
           <div className="space-y-3 px-5 pb-5">
 
-            <Link
-              href="/income"
-              onClick={onClose}
+            {/* UPDATE PENGHASILAN */}
+
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onIncome();
+              }}
               className="
                 flex
+                w-full
                 items-center
                 justify-between
                 rounded-2xl
@@ -91,6 +102,7 @@ export function FloatingActionMenu({
               "
             >
               <div className="flex items-center gap-4">
+
                 <div
                   className="
                     flex
@@ -111,18 +123,26 @@ export function FloatingActionMenu({
                 <span className="font-medium text-white">
                   Update Penghasilan
                 </span>
+
               </div>
 
               <span className="text-zinc-500">
                 ›
               </span>
-            </Link>
 
-            <Link
-              href="/expenses/new"
-              onClick={onClose}
+            </button>
+
+            {/* TAMBAH PENGELUARAN */}
+
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onExpense();
+              }}
               className="
                 flex
+                w-full
                 items-center
                 justify-between
                 rounded-2xl
@@ -137,6 +157,7 @@ export function FloatingActionMenu({
               "
             >
               <div className="flex items-center gap-4">
+
                 <div
                   className="
                     flex
@@ -157,14 +178,17 @@ export function FloatingActionMenu({
                 <span className="font-medium text-white">
                   Tambah Pengeluaran
                 </span>
+
               </div>
 
               <span className="text-zinc-500">
                 ›
               </span>
-            </Link>
+
+            </button>
 
           </div>
+
         </div>
 
       </div>
