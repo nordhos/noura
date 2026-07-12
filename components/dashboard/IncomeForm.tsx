@@ -11,6 +11,11 @@ import { Section } from "@/components/ui/Section";
 
 import { useIncome, useUpdateIncome } from "@/hooks/useIncome";
 
+import {
+  formatIDRInput,
+  parseIDRInput,
+} from "@/lib/format-currency";
+
 interface IncomeFormProps {
   onSuccess?: () => void;
 }
@@ -74,14 +79,20 @@ export function IncomeForm({
       className="space-y-6"
     >
       <Section title="Penghasilan Suami">
+
         <FormField>
           <Label>Gaji Pokok</Label>
 
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             disabled={mutation.isPending}
-            value={husbandMain}
-            onChange={(e) => setHusbandMain(e.target.value)}
+            value={formatIDRInput(husbandMain)}
+            onChange={(e) =>
+              setHusbandMain(
+                parseIDRInput(e.target.value)
+              )
+            }
           />
         </FormField>
 
@@ -89,23 +100,35 @@ export function IncomeForm({
           <Label>Penghasilan Tambahan</Label>
 
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             disabled={mutation.isPending}
-            value={husbandExtra}
-            onChange={(e) => setHusbandExtra(e.target.value)}
+            value={formatIDRInput(husbandExtra)}
+            onChange={(e) =>
+              setHusbandExtra(
+                parseIDRInput(e.target.value)
+              )
+            }
           />
         </FormField>
+
       </Section>
 
       <Section title="Penghasilan Istri">
+
         <FormField>
           <Label>Gaji Pokok</Label>
 
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             disabled={mutation.isPending}
-            value={wifeMain}
-            onChange={(e) => setWifeMain(e.target.value)}
+            value={formatIDRInput(wifeMain)}
+            onChange={(e) =>
+              setWifeMain(
+                parseIDRInput(e.target.value)
+              )
+            }
           />
         </FormField>
 
@@ -113,12 +136,18 @@ export function IncomeForm({
           <Label>Penghasilan Tambahan</Label>
 
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             disabled={mutation.isPending}
-            value={wifeExtra}
-            onChange={(e) => setWifeExtra(e.target.value)}
+            value={formatIDRInput(wifeExtra)}
+            onChange={(e) =>
+              setWifeExtra(
+                parseIDRInput(e.target.value)
+              )
+            }
           />
         </FormField>
+
       </Section>
 
       <Button
