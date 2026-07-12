@@ -8,7 +8,7 @@ import type { NavItem as NavItemType } from "@/lib/types";
 
 import { NavItem } from "./NavItem";
 import { FloatingActionMenu } from "./FloatingActionMenu";
-import { IncomeBottomSheet } from "@/components/dashboard/IncomeBottomSheet";
+import { TransactionSheet } from "@/components/dashboard/TransactionSheet";
 
 interface BottomNavProps {
   items: NavItemType[];
@@ -64,19 +64,18 @@ export function BottomNav({
       </nav>
 
       <FloatingActionMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        onIncome={() => setIncomeOpen(true)}
-        onExpense={() => {
-          // sementara tetap kosong
-          // nanti kita buat ExpenseBottomSheet
-        }}
-      />
+  open={menuOpen}
+  onClose={() => setMenuOpen(false)}
+  onIncome={() => setIncomeOpen(true)}
+  onExpense={() => {
+    // sementara tetap kosong
+  }}
+/>
 
-      <IncomeBottomSheet
-        open={incomeOpen}
-        onClose={() => setIncomeOpen(false)}
-      />
+<TransactionSheet
+  open={incomeOpen}
+  onClose={() => setIncomeOpen(false)}
+/>
     </>
   );
 }

@@ -121,7 +121,7 @@ export function FloatingActionMenu({
                 </div>
 
                 <span className="font-medium text-white">
-                  Update Penghasilan
+                  Catat Penghasilan
                 </span>
 
               </div>
@@ -176,7 +176,7 @@ export function FloatingActionMenu({
                 </div>
 
                 <span className="font-medium text-white">
-                  Tambah Pengeluaran
+                  Catat Pengeluaran
                 </span>
 
               </div>

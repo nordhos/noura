@@ -11,7 +11,7 @@ import { Section } from "@/components/ui/Section";
 
 import { useIncome, useUpdateIncome } from "@/hooks/useIncome";
 
-export function IncomeForm() {
+export function TransactionForm() {
   const router = useRouter();
 
   const { data, isLoading } = useIncome();

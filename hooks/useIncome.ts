@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCurrentIncome,
   updateIncome,
-  type IncomeFormData,
+  type TransactionFormData,
 } from "@/services/income.service";
 
 export function useIncome() {
@@ -19,7 +19,7 @@ export function useUpdateIncome() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (values: IncomeFormData) => updateIncome(values),
+    mutationFn: (values: TransactionFormData) => updateIncome(values),
 
     onSuccess: () => {
       // Refresh halaman income

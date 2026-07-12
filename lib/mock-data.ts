@@ -65,8 +65,8 @@ export const quickActions = [
 ];
 
 export const navItems: NavItem[] = [
-  { id: 'beranda', label: 'Beranda', icon: Home, href: '/dashboard' },
-  { id: 'transaksi', label: 'Transaksi', icon: Receipt, href: '/transaksi' },
-  { id: 'laporan', label: 'Laporan', icon: BarChart3, href: '/laporan' },
-  { id: 'akun', label: 'Akun', icon: User, href: '/akun' },
+  { id: "beranda", label: "Beranda", icon: Home, href: "/dashboard" },
+  { id: "transaksi", label: "Transaksi", icon: Receipt, href: "/transaksi" },
+  { id: "laporan", label: "Laporan", icon: BarChart3, href: "/laporan" },
+  { id: "profil", label: "Profil", icon: User, href: "/profile" },
 ];
