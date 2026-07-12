@@ -67,3 +67,56 @@ export async function getTransactions(
 
   return data ?? [];
 }
+
+export async function getRecentTransactions() {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select(`
+        *,
+        profiles (
+          name,
+          role
+        ),
+        transaction_categories (
+          name,
+          icon,
+          color,
+          type
+        )
+      `)
+      .order("transaction_date", {
+        ascending: false,
+      })
+      .limit(5);
+  
+    if (error) throw error;
+  
+    return data ?? [];
+  }
+
+  export async function getAllTransactions() {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select(`
+        *,
+        profiles (
+          name,
+          role
+        ),
+        transaction_categories (
+          name,
+          icon,
+          color,
+          type
+        )
+      `)
+      .order("transaction_date", {
+        ascending: false,
+      });
+  
+    if (error) {
+      throw error;
+    }
+  
+    return data ?? [];
+  }

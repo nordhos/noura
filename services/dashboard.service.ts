@@ -18,52 +18,54 @@ export interface DashboardSummary {
   };
 }
 
+interface Profile {
+  id: string;
+  role: "husband" | "wife";
+  salary: number | string;
+}
+
+interface Transaction {
+  profile_id: string;
+  amount: number | string;
+  type: "income" | "expense";
+}
+
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const now = new Date();
 
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  // ==========================
-  // PROFILES
-  // ==========================
+  const {
+    data: profiles,
+    error: profileError,
+  } = await supabase
+    .from("profiles")
+    .select("id, role, salary");
 
-  const { data: profiles, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select("*");
+  if (profileError) {
+    throw profileError;
+  }
 
-  if (profileError) throw profileError;
+  const profileList = (profiles ?? []) as Profile[];
 
-  const husband =
-    profiles?.find(
-      (item) => item.role === "husband"
-    );
+  const husband = profileList.find(
+    (profile) => profile.role === "husband"
+  );
 
-  const wife =
-    profiles?.find(
-      (item) => item.role === "wife"
-    );
+  const wife = profileList.find(
+    (profile) => profile.role === "wife"
+  );
 
-  const husbandSalary =
-    Number(husband?.salary ?? 0);
-
-  const wifeSalary =
-    Number(wife?.salary ?? 0);
-
-  const totalIncome =
-    husbandSalary + wifeSalary;
-
-  // ==========================
-  // TRANSACTIONS
-  // ==========================
+  const husbandSalary = Number(husband?.salary ?? 0);
+  const wifeSalary = Number(wife?.salary ?? 0);
 
   const {
     data: transactions,
     error: transactionError,
   } = await supabase
     .from("transactions")
-    .select("amount,type")
+    .select("profile_id, amount, type")
     .eq("year", year)
     .eq("month", month);
 
@@ -71,24 +73,59 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     throw transactionError;
   }
 
-  const totalExpense =
-    transactions
-      ?.filter(
-        (item) => item.type === "expense"
-      )
-      .reduce(
-        (sum, item) =>
-          sum + Number(item.amount),
-        0
-      ) ?? 0;
+  const transactionList =
+    (transactions ?? []) as Transaction[];
+
+  const husbandIncome = transactionList
+    .filter(
+      (transaction) =>
+        transaction.type === "income" &&
+        transaction.profile_id === husband?.id
+    )
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount),
+      0
+    );
+
+  const wifeIncome = transactionList
+    .filter(
+      (transaction) =>
+        transaction.type === "income" &&
+        transaction.profile_id === wife?.id
+    )
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount),
+      0
+    );
+
+  const totalExpense = transactionList
+    .filter(
+      (transaction) =>
+        transaction.type === "expense"
+    )
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount),
+      0
+    );
+    const husbandTotal =
+    husbandSalary + husbandIncome;
+
+  const wifeTotal =
+    wifeSalary + wifeIncome;
+
+  const totalIncome =
+    husbandTotal + wifeTotal;
 
   const balance =
     totalIncome - totalExpense;
 
   return {
     incomes: {
-      husband: husbandSalary,
-      wife: wifeSalary,
+      husband: husbandTotal,
+      wife: wifeTotal,
       total: totalIncome,
     },
 
@@ -98,9 +135,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         totalIncome === 0
           ? 0
           : Math.round(
-              (totalExpense /
-                totalIncome) *
-                100
+              (totalExpense / totalIncome) * 100
             ),
     },
 
@@ -110,9 +145,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         totalIncome === 0
           ? 0
           : Math.round(
-              (balance /
-                totalIncome) *
-                100
+              (balance / totalIncome) * 100
             ),
     },
   };

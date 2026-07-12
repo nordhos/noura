@@ -1,10 +1,16 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import {
   createTransaction,
   getTransactions,
+  getRecentTransactions,
+  getAllTransactions,
   type TransactionPayload,
 } from "@/services/transaction.service";
 
@@ -18,6 +24,20 @@ export function useTransactions(
   });
 }
 
+export function useRecentTransactions() {
+  return useQuery({
+    queryKey: ["recent-transactions"],
+    queryFn: getRecentTransactions,
+  });
+}
+
+export function useAllTransactions() {
+  return useQuery({
+    queryKey: ["all-transactions"],
+    queryFn: getAllTransactions,
+  });
+}
+
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
 
@@ -26,17 +46,25 @@ export function useCreateTransaction() {
       createTransaction(payload),
 
     onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["transactions"],
-        });
-      
-        queryClient.invalidateQueries({
-          queryKey: ["dashboard"],
-        });
-      
-        queryClient.invalidateQueries({
-          queryKey: ["profiles"],
-        });
-      },
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["recent-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["all-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["profiles"],
+      });
+    },
   });
 }

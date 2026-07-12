@@ -10,6 +10,7 @@ import { TotalIncomeCard } from "@/components/dashboard/TotalIncomeCard";
 import { ExpenseSummaryCard } from "@/components/dashboard/ExpenseSummaryCard";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { BottomNav } from "@/components/layout/BottomNav";
+import RecentTransactions from "@/components/dashboard/RecentTransactions";
 
 import {
   monthOptions,
@@ -98,6 +99,7 @@ export default function DashboardPage() {
           amount={data.balance.total}
           percentage={data.balance.percentage}
         />
+        <RecentTransactions />
 
       </main>
 
