@@ -56,8 +56,8 @@ export function TransactionForm({
   const [categoryOpen, setCategoryOpen] =
     useState(false);
 
-  const transactionDate =
-    getTodayIndonesia();
+  const [transactionDate, setTransactionDate] =
+    useState(getTodayIndonesia());
 
   async function handleSubmit() {
 
@@ -148,6 +148,22 @@ export function TransactionForm({
         }
         onSelect={setCategoryId}
       />
+
+      <FormField>
+
+        <Label>Tanggal</Label>
+
+        <Input
+          type="date"
+          value={transactionDate}
+          onChange={(e) =>
+            setTransactionDate(
+              e.target.value
+            )
+          }
+        />
+
+      </FormField>
 
       <FormField>
 

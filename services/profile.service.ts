@@ -6,6 +6,7 @@ export interface Profile {
   name: string;
   salary: number;
   payday: number;
+  savings: number;
 }
 
 export interface UpdateProfilePayload {
@@ -13,6 +14,7 @@ export interface UpdateProfilePayload {
   name: string;
   salary: number;
   payday: number;
+  savings: number;
 }
 
 export async function getProfiles(): Promise<Profile[]> {
@@ -29,6 +31,7 @@ export async function getProfiles(): Promise<Profile[]> {
     name: item.name,
     salary: Number(item.salary),
     payday: Number(item.payday),
+    savings: Number(item.savings ?? 0),
   }));
 }
 
@@ -41,6 +44,7 @@ export async function updateProfile(
       name: payload.name,
       salary: payload.salary,
       payday: payload.payday,
+      savings: payload.savings,
     })
     .eq("id", payload.id);
 

@@ -13,6 +13,7 @@ import { navItems } from "@/lib/mock-data";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useFinanceStore } from "@/stores/useFinanceStore";
 import { isAuthenticated } from "@/hooks/useAuth";
+import { useDashboard } from "@/hooks/useDashboard";
 
 export default function TransactionPage() {
   const router = useRouter();
@@ -30,6 +31,9 @@ export default function TransactionPage() {
     selectedMonth
   );
 
+  const { data: dashboard } =
+  useDashboard();
+
   const periodLabel = new Intl.DateTimeFormat(
     "id-ID",
     {
@@ -43,27 +47,17 @@ export default function TransactionPage() {
     )
   );
 
-  const totalIncome = data
-    .filter((item) => item.type === "income")
-    .reduce(
-      (total, item) =>
-        total + Number(item.amount),
-      0
-    );
+  const totalIncome =
+  dashboard?.incomes.total ?? 0;
 
-  const totalExpense = data
-    .filter((item) => item.type === "expense")
-    .reduce(
-      (total, item) =>
-        total + Number(item.amount),
-      0
-    );
+const totalExpense =
+  dashboard?.expenses.total ?? 0;
 
-  const balance =
-    totalIncome - totalExpense;
+const balance =
+  dashboard?.balance.total ?? 0;
 
-  const transactionCount =
-    data.length;
+const transactionCount =
+  data.length;
 
   const pdfTransactions = data.map((item) => ({
     id: item.id,
