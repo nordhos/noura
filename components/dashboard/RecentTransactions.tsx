@@ -29,11 +29,11 @@ export default function RecentTransactions() {
         return (
             <section className="space-y-3">
                 <h2 className="text-lg font-semibold text-white">
-                    Transaksi Terbaru
+                    Transaksi Bulan Ini
                 </h2>
 
                 <p className="text-sm text-zinc-400">
-                    Belum ada transaksi.
+                    Belum ada transaksi pada bulan ini.
                 </p>
             </section>
         );
@@ -42,19 +42,11 @@ export default function RecentTransactions() {
     return (
         <section className="space-y-3">
 
-            <div className="flex items-center justify-between">
+            <div>
 
                 <h2 className="text-lg font-semibold">
-                    Transaksi Terbaru
+                    Transaksi Bulan Ini
                 </h2>
-
-                <button
-                    type="button"
-                    onClick={() => router.push("/transaksi")}
-                    className="text-sm font-medium text-accent transition hover:opacity-80"
-                >
-                    Lihat Semua
-                </button>
 
             </div>
 
@@ -62,8 +54,8 @@ export default function RecentTransactions() {
 
                 {data.map((item) => (
                     <TransactionItem
-                    id={item.id}
-                    key={item.id}
+                        id={item.id}
+                        key={item.id}
                         type={item.type}
                         category={
                             item.transaction_categories?.name ??
@@ -82,6 +74,29 @@ export default function RecentTransactions() {
                         })}
                     />
                 ))}
+
+<button
+    type="button"
+    onClick={() =>
+        router.push("/transaksi")
+    }
+    className="
+        flex
+        w-full
+        items-center
+        justify-center
+        border-t
+        border-border
+        py-4
+        text-sm
+        font-medium
+        text-accent
+        transition
+        hover:bg-white/5
+    "
+>
+    Lihat Semua →
+</button>
 
             </div>
 

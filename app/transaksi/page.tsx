@@ -9,22 +9,44 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { TransactionItem } from "@/components/dashboard/TransactionItem";
 
 import { navItems } from "@/lib/mock-data";
-import { useAllTransactions } from "@/hooks/useTransactions";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useFinanceStore } from "@/stores/useFinanceStore";
 import { isAuthenticated } from "@/hooks/useAuth";
 
 export default function TransactionPage() {
   const router = useRouter();
+
+  const {
+    selectedMonth,
+    selectedYear,
+  } = useFinanceStore();
+  
+  const {
+    data = [],
+    isLoading,
+  } = useTransactions(
+    selectedYear,
+    selectedMonth
+  );
+  
+  const periodLabel = new Intl.DateTimeFormat(
+    "id-ID",
+    {
+      month: "long",
+      year: "numeric",
+    }
+  ).format(
+    new Date(
+      selectedYear,
+      selectedMonth - 1
+    )
+  );
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace("/");
     }
   }, [router]);
-
-  const {
-    data = [],
-    isLoading,
-  } = useAllTransactions();
 
   return (
     <>
@@ -45,8 +67,8 @@ export default function TransactionPage() {
             </h1>
 
             <p className="text-sm text-zinc-400">
-              Semua transaksi terbaru
-            </p>
+    {periodLabel}
+</p>
           </div>
 
         </div>
