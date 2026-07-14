@@ -1,5 +1,6 @@
 "use client";
 
+import { downloadTransactionReport } from "@/lib/pdf/downloadTransactionReport";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,7 +21,7 @@ export default function TransactionPage() {
     selectedMonth,
     selectedYear,
   } = useFinanceStore();
-  
+
   const {
     data = [],
     isLoading,
@@ -28,7 +29,7 @@ export default function TransactionPage() {
     selectedYear,
     selectedMonth
   );
-  
+
   const periodLabel = new Intl.DateTimeFormat(
     "id-ID",
     {
@@ -42,6 +43,53 @@ export default function TransactionPage() {
     )
   );
 
+  const totalIncome = data
+    .filter((item) => item.type === "income")
+    .reduce(
+      (total, item) =>
+        total + Number(item.amount),
+      0
+    );
+
+  const totalExpense = data
+    .filter((item) => item.type === "expense")
+    .reduce(
+      (total, item) =>
+        total + Number(item.amount),
+      0
+    );
+
+  const balance =
+    totalIncome - totalExpense;
+
+  const transactionCount =
+    data.length;
+
+  const pdfTransactions = data.map((item) => ({
+    id: item.id,
+
+    date: new Date(
+      item.transaction_date
+    ).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+    }),
+
+    profile:
+      item.profiles?.name ?? "-",
+
+    category:
+      item.transaction_categories?.name ??
+      "-",
+
+    description:
+      item.description ?? "-",
+
+    type: item.type,
+
+    amount: Number(item.amount),
+  }));
+
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace("/");
@@ -52,24 +100,57 @@ export default function TransactionPage() {
     <>
       <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-28">
 
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex items-center justify-between">
 
-          <Link
-            href="/dashboard"
-            className="rounded-xl border border-border p-2"
-          >
-            <ArrowLeft size={18} />
-          </Link>
+          <div className="flex items-center gap-3">
 
-          <div>
-            <h1 className="text-2xl font-bold">
-              Riwayat Transaksi
-            </h1>
+            <Link
+              href="/dashboard"
+              className="rounded-xl border border-border p-2"
+            >
+              <ArrowLeft size={18} />
+            </Link>
 
-            <p className="text-sm text-zinc-400">
-    {periodLabel}
-</p>
+            <div>
+
+              <h1 className="text-2xl font-bold">
+                Riwayat Transaksi
+              </h1>
+
+              <p className="text-sm text-zinc-400">
+                {periodLabel}
+              </p>
+
+            </div>
+
           </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              downloadTransactionReport({
+                period: periodLabel,
+                totalIncome,
+                totalExpense,
+                balance,
+                transactionCount,
+                transactions: pdfTransactions,
+              })
+            }
+            className="
+    rounded-xl
+    border
+    border-border
+    px-3
+    py-2
+    text-sm
+    font-medium
+    transition
+    hover:bg-white/5
+  "
+          >
+            ⬇ PDF
+          </button>
 
         </div>
 
@@ -87,8 +168,8 @@ export default function TransactionPage() {
 
           {data.map((item) => (
             <TransactionItem
-            id={item.id}
-            key={item.id}
+              id={item.id}
+              key={item.id}
               type={item.type}
               category={
                 item.transaction_categories?.name ??
