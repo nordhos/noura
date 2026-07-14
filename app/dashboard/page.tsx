@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MonthSelector } from "@/components/dashboard/MonthSelector";
 import { IncomeCard } from "@/components/dashboard/IncomeCard";
@@ -19,6 +18,7 @@ import {
 } from "@/lib/mock-data";
 
 import { useDashboard } from "@/hooks/useDashboard";
+import { useFinanceStore } from "@/stores/useFinanceStore";
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
@@ -30,9 +30,17 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  const [month, setMonth] = useState(
-    monthOptions[monthOptions.length - 1]
-  );
+  const {
+    selectedMonth,
+    selectedYear,
+    setMonth,
+  } = useFinanceStore();
+
+  const month =
+    monthOptions.find(
+      (item) =>
+        item.value === selectedMonth
+    ) ?? monthOptions[0];
 
   if (isLoading) {
     return (
@@ -71,10 +79,12 @@ export default function DashboardPage() {
         <DashboardHeader />
 
         <MonthSelector
-          value={month}
-          options={monthOptions}
-          onChange={setMonth}
-        />
+  value={month}
+  options={monthOptions}
+  onChange={(value) =>
+    setMonth(value.value)
+  }
+/>
 
         <div className="grid grid-cols-2 gap-4">
 

@@ -27,11 +27,66 @@ export const dashboardSummary: DashboardSummary = {
   balancePercentage: 0,
 };
 
-export const monthOptions: string[] = [
-  'Mei 2026',
-  'Juni 2026',
-  'Juli 2026',
-  'Agustus 2026',
+export const monthOptions = [
+  {
+    label: "Januari 2026",
+    value: 1,
+  },
+
+  {
+    label: "Februari 2026",
+    value: 2,
+  },
+
+  {
+    label: "Maret 2026",
+    value: 3,
+  },
+
+  {
+    label: "April 2026",
+    value: 4,
+  },
+
+  {
+    label: "Mei 2026",
+    value: 5,
+  },
+
+  {
+    label: "Juni 2026",
+    value: 6,
+  },
+
+  {
+    label: "Juli 2026",
+    value: 7,
+  },
+
+  {
+    label: "Agustus 2026",
+    value: 8,
+  },
+
+  {
+    label: "September 2026",
+    value: 9,
+  },
+
+  {
+    label: "Oktober 2026",
+    value: 10,
+  },
+
+  {
+    label: "November 2026",
+    value: 11,
+  },
+
+  {
+    label: "Desember 2026",
+    value: 12,
+  },
 ];
 
 export const quickActions = [
@@ -60,7 +115,7 @@ export const quickActions = [
     id: "laporan",
     label: "Laporan",
     icon: ArrowDownToLine,
-    href: "/reports",
+    href: "/laporan",
   },
 ];
 
