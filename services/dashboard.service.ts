@@ -1,6 +1,12 @@
 import { supabase } from "@/lib/supabase";
 
 export interface DashboardSummary {
+  startingBalance: {
+    husband: number;
+    wife: number;
+    total: number;
+  };
+
   incomes: {
     husband: number;
     wife: number;
@@ -22,6 +28,7 @@ interface Profile {
   id: string;
   role: "husband" | "wife";
   salary: number | string;
+  savings: number | string;
 }
 
 interface Transaction {
@@ -39,7 +46,7 @@ export async function getDashboardSummary(
     error: profileError,
   } = await supabase
     .from("profiles")
-    .select("id, role, salary");
+    .select("id, role, salary, savings");
 
   if (profileError) {
     throw profileError;
@@ -65,6 +72,18 @@ export async function getDashboardSummary(
 
   const wifeSalary =
     Number(wife?.salary ?? 0);
+
+  const husbandSavings =
+    Number(husband?.savings ?? 0);
+
+  const wifeSavings =
+    Number(wife?.savings ?? 0);
+
+  const totalSavings =
+    husbandSavings + wifeSavings;
+
+  const startingBalance =
+    totalSavings;
 
   const {
     data: transactions,
@@ -145,38 +164,43 @@ export async function getDashboardSummary(
     wifeTotal;
 
   const balance =
+    totalSavings +
     totalIncome -
     totalExpense;
 
-  return {
-    incomes: {
-      husband: husbandTotal,
-      wife: wifeTotal,
-      total: totalIncome,
-    },
-
-    expenses: {
-      total: totalExpense,
-      percentage:
-        totalIncome === 0
-          ? 0
-          : Math.round(
-            (totalExpense /
-              totalIncome) *
-            100
-          ),
-    },
-
-    balance: {
-      total: balance,
-      percentage:
-        totalIncome === 0
-          ? 0
-          : Math.round(
-            (balance /
-              totalIncome) *
-            100
-          ),
-    },
-  };
+    return {
+      startingBalance: {
+        husband: husbandSavings,
+        wife: wifeSavings,
+        total: startingBalance,
+      },
+    
+      incomes: {
+        husband: husbandTotal,
+        wife: wifeTotal,
+        total: totalIncome,
+      },
+    
+      expenses: {
+        total: totalExpense,
+        percentage:
+          totalIncome === 0
+            ? 0
+            : Math.round(
+                (totalExpense / totalIncome) *
+                  100
+              ),
+      },
+    
+      balance: {
+        total: balance,
+        percentage:
+          totalIncome === 0
+            ? 0
+            : Math.round(
+                (balance / totalIncome) *
+                  100
+              ),
+      },
+    };
 }

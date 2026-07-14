@@ -21,6 +21,11 @@ interface EditProfileSheetProps {
   onClose: () => void;
 }
 
+import {
+  formatIDRInput,
+  parseIDRInput,
+} from "@/lib/format-currency";
+
 export function EditProfileSheet({
   open,
   profile,
@@ -36,6 +41,8 @@ export function EditProfileSheet({
   const [payday, setPayday] =
     useState("");
 
+  const [savings, setSavings] = useState("");
+
   useEffect(() => {
     if (!profile) return;
 
@@ -47,6 +54,10 @@ export function EditProfileSheet({
 
     setPayday(
       profile.payday.toString()
+    );
+
+    setSavings(
+      profile.savings.toString()
     );
   }, [profile]);
 
@@ -65,6 +76,8 @@ export function EditProfileSheet({
       salary: Number(salary),
 
       payday: Number(payday),
+
+      savings: Number(savings),
     };
 
     try {
@@ -117,54 +130,81 @@ export function EditProfileSheet({
           </label>
 
           <Input
-            type="number"
+            type="text"
             inputMode="numeric"
-            value={salary}
-            placeholder="10000000"
+            value={formatIDRInput(salary)}
+            placeholder="10.000.000"
             onChange={(e) =>
-              setSalary(e.target.value)
+              setSalary(
+                parseIDRInput(
+                  e.target.value
+                )
+              )
             }
           />
 
         </FormField>
         <FormField>
 
-<label className="text-sm text-zinc-400">
-  Tanggal Gajian
-</label>
+          <label className="text-sm text-zinc-400">
+            Tanggal Gajian
+          </label>
 
-<Input
-  type="number"
-  inputMode="numeric"
-  min={1}
-  max={31}
-  value={payday}
-  placeholder="25"
-  onChange={(e) =>
-    setPayday(e.target.value)
-  }
-/>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={31}
+            value={payday}
+            placeholder="25"
+            onChange={(e) =>
+              setPayday(e.target.value)
+            }
+          />
 
-</FormField>
+        </FormField>
 
-<div className="pt-2">
+        <FormField>
 
-<Button
-  type="submit"
-  disabled={
-    updateProfile.isPending ||
-    name.trim() === "" ||
-    salary === "" ||
-    payday === ""
-  }
->
-  {updateProfile.isPending
-    ? "Menyimpan..."
-    : "Simpan"}
-</Button>
+          <label className="text-sm text-zinc-400">
+            Saldo Saat Mulai
+          </label>
 
-</div>
-</form>
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={formatIDRInput(savings)}
+            placeholder="25.000.000"
+            onChange={(e) =>
+              setSavings(
+                parseIDRInput(
+                  e.target.value
+                )
+              )
+            }
+          />
+
+        </FormField>
+
+        <div className="pt-2">
+
+          <Button
+            type="submit"
+            disabled={
+              updateProfile.isPending ||
+              name.trim() === "" ||
+              salary === "" ||
+              payday === "" ||
+              savings === ""
+            }
+          >
+            {updateProfile.isPending
+              ? "Menyimpan..."
+              : "Simpan"}
+          </Button>
+
+        </div>
+      </form>
     </BottomSheet>
   );
 }

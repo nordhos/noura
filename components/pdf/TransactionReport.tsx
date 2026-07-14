@@ -54,13 +54,15 @@ const styles = StyleSheet.create({
     },
 
     summaryContainer: {
+        marginTop: 8,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        borderRadius: 4,
-        paddingVertical: 10,
+        borderRadius: 6,
+        paddingTop: 10,
+        paddingBottom: 10,
         paddingHorizontal: 12,
         marginBottom: 18,
-    },
+      },
 
     summaryRow: {
         flexDirection: "row",
@@ -145,21 +147,28 @@ export interface TransactionPdfItem {
 
 interface Props {
     period: string;
+
+    startingBalance: number;
+
     totalIncome: number;
     totalExpense: number;
     balance: number;
+
     transactionCount: number;
+
     transactions: TransactionPdfItem[];
 }
 
 export function TransactionReport({
     period,
+    startingBalance,
     totalIncome,
     totalExpense,
     balance,
     transactionCount,
     transactions,
 }: Props) {
+
     const currency = (value: number) =>
         new Intl.NumberFormat("id-ID", {
             style: "currency",
@@ -212,6 +221,17 @@ export function TransactionReport({
                 </Text>
 
                 <View style={styles.summaryContainer}>
+
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>
+                            Saldo Saat Mulai
+                        </Text>
+
+                        <Text style={styles.summaryValue}>
+                            {currency(startingBalance)}
+                        </Text>
+                    </View>
+
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>
                             Total Pemasukan
@@ -234,7 +254,7 @@ export function TransactionReport({
 
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>
-                            Saldo
+                            Saldo Saat Ini
                         </Text>
 
                         <Text style={styles.summaryValue}>
@@ -251,6 +271,7 @@ export function TransactionReport({
                             {transactionCount}
                         </Text>
                     </View>
+
                 </View>
 
                 <Text style={styles.sectionTitle}>

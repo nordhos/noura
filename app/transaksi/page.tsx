@@ -32,7 +32,7 @@ export default function TransactionPage() {
   );
 
   const { data: dashboard } =
-  useDashboard();
+    useDashboard();
 
   const periodLabel = new Intl.DateTimeFormat(
     "id-ID",
@@ -48,16 +48,19 @@ export default function TransactionPage() {
   );
 
   const totalIncome =
-  dashboard?.incomes.total ?? 0;
+    dashboard?.incomes.total ?? 0;
 
-const totalExpense =
-  dashboard?.expenses.total ?? 0;
+  const totalExpense =
+    dashboard?.expenses.total ?? 0;
 
-const balance =
-  dashboard?.balance.total ?? 0;
+  const balance =
+    dashboard?.balance.total ?? 0;
 
-const transactionCount =
-  data.length;
+  const startingBalance =
+    dashboard?.startingBalance.total ?? 0;
+
+  const transactionCount =
+    data.length;
 
   const pdfTransactions = data.map((item) => ({
     id: item.id,
@@ -124,6 +127,7 @@ const transactionCount =
             onClick={() =>
               downloadTransactionReport({
                 period: periodLabel,
+                startingBalance,
                 totalIncome,
                 totalExpense,
                 balance,
