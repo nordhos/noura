@@ -9,10 +9,18 @@ export interface MonthlyCashFlow {
 }
 
 export interface ReportSummary {
+  startingBalance: number;
+
   totalIncome: number;
+
   totalExpense: number;
+
   totalBalance: number;
+
   totalTransaction: number;
+
+  netCashFlow: number;
+
   monthly: MonthlyCashFlow[];
 }
 
@@ -20,6 +28,7 @@ interface Profile {
   id: string;
   role: "husband" | "wife";
   salary: number | string;
+  savings: number | string;
 }
 
 interface Transaction {
@@ -49,7 +58,7 @@ export async function getReportSummary(): Promise<ReportSummary> {
   const { data: profiles, error: profileError } =
     await supabase
       .from("profiles")
-      .select("id, role, salary");
+      .select("id, role, salary, savings");
 
   if (profileError) throw profileError;
 
@@ -68,6 +77,17 @@ export async function getReportSummary(): Promise<ReportSummary> {
   const wifeSalary = Number(
     wife?.salary ?? 0
   );
+
+  const husbandSavings = Number(
+    husband?.savings ?? 0
+  );
+
+  const wifeSavings = Number(
+    wife?.savings ?? 0
+  );
+
+  const startingBalance =
+    husbandSavings + wifeSavings;
 
   const {
     data: transactions,
@@ -97,18 +117,19 @@ export async function getReportSummary(): Promise<ReportSummary> {
   const list =
     (transactions ?? []) as Transaction[];
 
-  let husbandIncome = 0;
-  let wifeIncome = 0;
-  let totalExpense = 0;
-
   const monthlyMap = new Map<
     string,
     MonthlyCashFlow
   >();
 
+  let husbandIncome = 0;
+
+  let wifeIncome = 0;
+
+  let totalExpense = 0;
+
   for (const item of list) {
     const amount = Number(item.amount);
-
     if (
       item.type === "income" &&
       item.profile_id === husband?.id
@@ -159,19 +180,30 @@ export async function getReportSummary(): Promise<ReportSummary> {
     husbandIncome +
     wifeIncome;
 
-  return {
-    totalIncome,
+  const netCashFlow =
+    totalIncome -
+    totalExpense;
 
-    totalExpense,
+  const totalBalance =
+    startingBalance +
+    netCashFlow;
 
-    totalBalance:
-      totalIncome - totalExpense,
-
-    totalTransaction:
-      list.length,
-
-    monthly: Array.from(
-      monthlyMap.values()
-    ),
-  };
+    return {
+      startingBalance,
+    
+      totalIncome,
+    
+      totalExpense,
+    
+      totalBalance,
+    
+      totalTransaction:
+        list.length,
+    
+      netCashFlow,
+    
+      monthly: Array.from(
+        monthlyMap.values()
+      ),
+    };
 }

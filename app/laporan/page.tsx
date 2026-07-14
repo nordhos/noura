@@ -96,7 +96,7 @@ export default function ReportPage() {
                                 </h2>
 
                                 <p className="mt-3 text-sm text-accent">
-                                    Sejak pertama menggunakan NOURA
+                                    Terhitung dari pertama menggunakan NOURA
                                 </p>
 
                             </div>

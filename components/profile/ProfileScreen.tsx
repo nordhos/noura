@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { BackButton } from "@/components/ui/BackButton";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { navItems } from "@/lib/mock-data";
 
 import {
-  ArrowLeft,
   Pencil,
   User,
   Wallet,
@@ -66,12 +65,7 @@ export function ProfileScreen() {
 
         <header className="flex items-center gap-3">
 
-          <Link
-            href="/dashboard"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950"
-          >
-            <ArrowLeft size={18} />
-          </Link>
+        <BackButton href="/dashboard" />
 
           <div>
             <h1 className="text-2xl font-bold text-white">

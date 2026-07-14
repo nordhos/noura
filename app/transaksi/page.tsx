@@ -4,7 +4,7 @@ import { downloadTransactionReport } from "@/lib/pdf/downloadTransactionReport";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 import { BottomNav } from "@/components/layout/BottomNav";
 import { TransactionItem } from "@/components/dashboard/TransactionItem";
@@ -101,12 +101,7 @@ export default function TransactionPage() {
 
           <div className="flex items-center gap-3">
 
-            <Link
-              href="/dashboard"
-              className="rounded-xl border border-border p-2"
-            >
-              <ArrowLeft size={18} />
-            </Link>
+          <BackButton href="/dashboard" />
 
             <div>
 
