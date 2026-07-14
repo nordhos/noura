@@ -12,17 +12,23 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/hooks/useAuth";
 
-import {
-  monthOptions,
-  navItems,
-} from "@/lib/mock-data";
+import { navItems } from "@/lib/mock-data";
 
 import { useDashboard } from "@/hooks/useDashboard";
+
+import {
+  getAllTransactions,
+} from "@/services/transaction.service";
+
 import { useFinanceStore } from "@/stores/useFinanceStore";
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
   const router = useRouter();
+
+  const {
+    setAvailablePeriods,
+  } = useFinanceStore();
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -30,17 +36,30 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  const {
-    selectedMonth,
-    selectedYear,
-    setMonth,
-  } = useFinanceStore();
-
-  const month =
-    monthOptions.find(
-      (item) =>
-        item.value === selectedMonth
-    ) ?? monthOptions[0];
+  useEffect(() => {
+    async function loadPeriods() {
+      const transactions =
+        await getAllTransactions();
+  
+      const periods = Array.from(
+        new Map(
+          transactions.map(
+            (item: any) => [
+              `${item.year}-${item.month}`,
+              {
+                year: item.year,
+                month: item.month,
+              },
+            ]
+          )
+        ).values()
+      );
+  
+      setAvailablePeriods(periods);
+    }
+  
+    loadPeriods();
+  }, [setAvailablePeriods]);
 
   if (isLoading) {
     return (
@@ -78,13 +97,7 @@ export default function DashboardPage() {
 
         <DashboardHeader />
 
-        <MonthSelector
-  value={month}
-  options={monthOptions}
-  onChange={(value) =>
-    setMonth(value.value)
-  }
-/>
+        <MonthSelector />
 
         <div className="grid grid-cols-2 gap-4">
 

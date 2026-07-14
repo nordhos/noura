@@ -30,12 +30,10 @@ interface Transaction {
   type: "income" | "expense";
 }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-
+export async function getDashboardSummary(
+  year: number,
+  month: number
+): Promise<DashboardSummary> {
   const {
     data: profiles,
     error: profileError,
@@ -47,25 +45,37 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     throw profileError;
   }
 
-  const profileList = (profiles ?? []) as Profile[];
+  const profileList =
+    (profiles ?? []) as Profile[];
 
-  const husband = profileList.find(
-    (profile) => profile.role === "husband"
-  );
+  const husband =
+    profileList.find(
+      (profile) =>
+        profile.role === "husband"
+    );
 
-  const wife = profileList.find(
-    (profile) => profile.role === "wife"
-  );
+  const wife =
+    profileList.find(
+      (profile) =>
+        profile.role === "wife"
+    );
 
-  const husbandSalary = Number(husband?.salary ?? 0);
-  const wifeSalary = Number(wife?.salary ?? 0);
+  const husbandSalary =
+    Number(husband?.salary ?? 0);
+
+  const wifeSalary =
+    Number(wife?.salary ?? 0);
 
   const {
     data: transactions,
     error: transactionError,
   } = await supabase
     .from("transactions")
-    .select("profile_id, amount, type")
+    .select(`
+      profile_id,
+      amount,
+      type
+    `)
     .eq("year", year)
     .eq("month", month);
 
@@ -76,51 +86,67 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const transactionList =
     (transactions ?? []) as Transaction[];
 
-  const husbandIncome = transactionList
-    .filter(
-      (transaction) =>
-        transaction.type === "income" &&
-        transaction.profile_id === husband?.id
-    )
-    .reduce(
-      (total, transaction) =>
-        total + Number(transaction.amount),
-      0
-    );
+  const husbandIncome =
+    transactionList
+      .filter(
+        (transaction) =>
+          transaction.type ===
+          "income" &&
+          transaction.profile_id ===
+          husband?.id
+      )
+      .reduce(
+        (total, transaction) =>
+          total +
+          Number(transaction.amount),
+        0
+      );
 
-  const wifeIncome = transactionList
-    .filter(
-      (transaction) =>
-        transaction.type === "income" &&
-        transaction.profile_id === wife?.id
-    )
-    .reduce(
-      (total, transaction) =>
-        total + Number(transaction.amount),
-      0
-    );
+  const wifeIncome =
+    transactionList
+      .filter(
+        (transaction) =>
+          transaction.type ===
+          "income" &&
+          transaction.profile_id ===
+          wife?.id
+      )
+      .reduce(
+        (total, transaction) =>
+          total +
+          Number(transaction.amount),
+        0
+      );
 
-  const totalExpense = transactionList
-    .filter(
-      (transaction) =>
-        transaction.type === "expense"
-    )
-    .reduce(
-      (total, transaction) =>
-        total + Number(transaction.amount),
-      0
-    );
-    const husbandTotal =
-    husbandSalary + husbandIncome;
+  const totalExpense =
+    transactionList
+      .filter(
+        (transaction) =>
+          transaction.type ===
+          "expense"
+      )
+      .reduce(
+        (total, transaction) =>
+          total +
+          Number(transaction.amount),
+        0
+      );
+
+  const husbandTotal =
+    husbandSalary +
+    husbandIncome;
 
   const wifeTotal =
-    wifeSalary + wifeIncome;
+    wifeSalary +
+    wifeIncome;
 
   const totalIncome =
-    husbandTotal + wifeTotal;
+    husbandTotal +
+    wifeTotal;
 
   const balance =
-    totalIncome - totalExpense;
+    totalIncome -
+    totalExpense;
 
   return {
     incomes: {
@@ -135,8 +161,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         totalIncome === 0
           ? 0
           : Math.round(
-              (totalExpense / totalIncome) * 100
-            ),
+            (totalExpense /
+              totalIncome) *
+            100
+          ),
     },
 
     balance: {
@@ -145,8 +173,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         totalIncome === 0
           ? 0
           : Math.round(
-              (balance / totalIncome) * 100
-            ),
+            (balance /
+              totalIncome) *
+            100
+          ),
     },
   };
 }

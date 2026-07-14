@@ -1,90 +1,91 @@
 "use client";
 
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    CartesianGrid,
+    XAxis,
+    YAxis,
+    Tooltip,
 } from "recharts";
 
 import { formatIDR } from "@/lib/format-currency";
 
 interface CashFlowItem {
-  label: string;
-  income: number;
-  expense: number;
+    label: string;
+    income: number;
+    expense: number;
 }
 
 interface CashFlowChartProps {
-  data: CashFlowItem[];
+    data: CashFlowItem[];
 }
 
 export function CashFlowChart({
-  data,
+    data,
 }: CashFlowChartProps) {
-  return (
-    <div className="mt-6 h-64">
+    return (
+        <div className="mt-6 h-64">
 
-      <ResponsiveContainer
-        width="100%"
-        height="100%"
-      >
+            <ResponsiveContainer
+                width="100%"
+                height="100%"
+            >
 
-        <LineChart data={data}>
+                <LineChart data={data}>
 
-          <CartesianGrid
-            strokeDasharray="3 3"
-            vertical={false}
-          />
+                    <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                    />
 
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 12 }}
-          />
+                    <XAxis
+                        dataKey="label"
+                        tick={{ fontSize: 12 }}
+                    />
 
-          <YAxis
-            hide
-          />
+                    <YAxis
+                        hide
+                    />
 
-          <Tooltip
-            formatter={(value: number) =>
-              formatIDR(Number(value))
-            }
-          />
+                    <Tooltip
+                        formatter={(value) => [
+                            formatIDR(Number(value ?? 0)),
+                            "",
+                        ]}
+                    />
 
-          <Line
-            type="monotone"
-            dataKey="income"
-            stroke="#22c55e"
-            strokeWidth={3}
-            dot={{
-              r: 4,
-            }}
-            activeDot={{
-              r: 6,
-            }}
-          />
+                    <Line
+                        type="monotone"
+                        dataKey="income"
+                        stroke="#22c55e"
+                        strokeWidth={3}
+                        dot={{
+                            r: 4,
+                        }}
+                        activeDot={{
+                            r: 6,
+                        }}
+                    />
 
-          <Line
-            type="monotone"
-            dataKey="expense"
-            stroke="#ef4444"
-            strokeWidth={3}
-            dot={{
-              r: 4,
-            }}
-            activeDot={{
-              r: 6,
-            }}
-          />
+                    <Line
+                        type="monotone"
+                        dataKey="expense"
+                        stroke="#ef4444"
+                        strokeWidth={3}
+                        dot={{
+                            r: 4,
+                        }}
+                        activeDot={{
+                            r: 6,
+                        }}
+                    />
 
-        </LineChart>
+                </LineChart>
 
-      </ResponsiveContainer>
+            </ResponsiveContainer>
 
-    </div>
-  );
+        </div>
+    );
 }

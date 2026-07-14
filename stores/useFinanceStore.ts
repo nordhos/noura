@@ -1,13 +1,27 @@
 import { create } from "zustand";
 
+interface FinancePeriod {
+  month: number;
+  year: number;
+}
+
 interface FinanceState {
   selectedMonth: number;
   selectedYear: number;
 
-  setMonth: (month: number) => void;
-  setYear: (year: number) => void;
+  availablePeriods: FinancePeriod[];
+
+  setPeriod: (
+    month: number,
+    year: number
+  ) => void;
+
+  setAvailablePeriods: (
+    periods: FinancePeriod[]
+  ) => void;
 
   nextMonth: () => void;
+
   previousMonth: () => void;
 
   setCurrentMonth: () => void;
@@ -40,78 +54,100 @@ export const useFinanceStore =
     selectedYear:
       today.getFullYear(),
 
-    setMonth: (month) =>
+    availablePeriods: [],
+
+    setPeriod: (
+      month: number,
+      year: number
+    ) =>
       set({
         selectedMonth: month,
-      }),
-
-    setYear: (year) =>
-      set({
         selectedYear: year,
       }),
 
-    nextMonth: () => {
-      const {
-        selectedMonth,
-        selectedYear,
-      } = get();
+    setAvailablePeriods: (
+      periods: FinancePeriod[]
+    ) =>
+      set({
+        availablePeriods: periods,
+      }),
 
-      if (selectedMonth === 12) {
+      nextMonth: () => {
+        const {
+          selectedMonth,
+          selectedYear,
+          availablePeriods,
+        } = get();
+  
+        const currentIndex =
+          availablePeriods.findIndex(
+            (period) =>
+              period.month === selectedMonth &&
+              period.year === selectedYear
+          );
+  
+        if (
+          currentIndex === -1 ||
+          currentIndex ===
+            availablePeriods.length - 1
+        ) {
+          return;
+        }
+  
+        const next =
+          availablePeriods[currentIndex + 1];
+  
         set({
-          selectedMonth: 1,
-          selectedYear:
-            selectedYear + 1,
+          selectedMonth: next.month,
+          selectedYear: next.year,
         });
-
-        return;
-      }
-
-      set({
-        selectedMonth:
-          selectedMonth + 1,
-      });
-    },
-
-    previousMonth: () => {
-      const {
-        selectedMonth,
-        selectedYear,
-      } = get();
-
-      if (selectedMonth === 1) {
+      },
+  
+      previousMonth: () => {
+        const {
+          selectedMonth,
+          selectedYear,
+          availablePeriods,
+        } = get();
+  
+        const currentIndex =
+          availablePeriods.findIndex(
+            (period) =>
+              period.month === selectedMonth &&
+              period.year === selectedYear
+          );
+  
+        if (currentIndex <= 0) {
+          return;
+        }
+  
+        const previous =
+          availablePeriods[currentIndex - 1];
+  
         set({
-          selectedMonth: 12,
-          selectedYear:
-            selectedYear - 1,
+          selectedMonth: previous.month,
+          selectedYear: previous.year,
         });
-
-        return;
-      }
-
-      set({
-        selectedMonth:
-          selectedMonth - 1,
-      });
-    },
-
-    setCurrentMonth: () => {
-      const now = new Date();
-
-      set({
-        selectedMonth:
-          now.getMonth() + 1,
-
-        selectedYear:
-          now.getFullYear(),
-      });
-    },
-
-    monthLabel: () => {
-      const {
-        selectedMonth,
-        selectedYear,
-      } = get();
-
-      return `${MONTHS[selectedMonth - 1]} ${selectedYear}`;
-    },
-  }));
+      },
+  
+      setCurrentMonth: () => {
+        const now = new Date();
+  
+        set({
+          selectedMonth:
+            now.getMonth() + 1,
+  
+          selectedYear:
+            now.getFullYear(),
+        });
+      },
+  
+      monthLabel: () => {
+        const {
+          selectedMonth,
+          selectedYear,
+        } = get();
+  
+        return `${MONTHS[selectedMonth - 1]} ${selectedYear}`;
+      },
+    }));

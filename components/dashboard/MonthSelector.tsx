@@ -1,108 +1,49 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/cn";
 
-export interface MonthOption {
-  label: string;
-  value: number;
-}
+import { MonthPicker } from "./MonthPicker";
+import { useFinanceStore } from "@/stores/useFinanceStore";
 
-interface MonthSelectorProps {
-  value: MonthOption;
-  options: MonthOption[];
-  onChange: (month: MonthOption) => void;
-}
+export function MonthSelector() {
+  const {
+    monthLabel,
+    selectedYear,
+  } = useFinanceStore();
 
-export function MonthSelector({
-  value,
-  options,
-  onChange,
-}: MonthSelectorProps) {
-  const [open, setOpen] = useState(false);
-
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (
-        ref.current &&
-        !ref.current.contains(e.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener(
-      "mousedown",
-      handleClick
-    );
-
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClick
-      );
-  }, []);
+  const [openPicker, setOpenPicker] =
+    useState(false);
 
   return (
-    <div
-      ref={ref}
-      className="relative inline-block"
-    >
+    <>
       <button
         type="button"
-        onClick={() =>
-          setOpen((o) => !o)
-        }
-        className="flex items-center gap-2 text-lg text-ink"
+        onClick={() => setOpenPicker(true)}
+        className="
+  flex
+  items-center
+  gap-2
+  text-xl
+  font-semibold
+  transition-opacity
+  hover:opacity-80
+        "
       >
-        {value.label}
+        <span>{monthLabel()}</span>
 
         <ChevronDown
-          size={18}
-          className={cn(
-            "transition-transform",
-            open && "rotate-180"
-          )}
+          size={22}
+          className={`transition-transform ${openPicker ? "rotate-180" : ""
+            }`}
         />
       </button>
 
-      {open && (
-        <ul className="absolute left-0 z-20 mt-2 w-48 overflow-hidden rounded-2xl border border-border bg-surface-raised py-2 shadow-xl">
-
-          {options.map((option) => (
-
-            <li
-              key={option.value}
-            >
-
-              <button
-                type="button"
-                onClick={() => {
-                  onChange(option);
-
-                  setOpen(false);
-                }}
-                className={cn(
-                  "block w-full px-4 py-2 text-left text-sm transition hover:bg-white/5",
-                  option.value ===
-                    value.value
-                    ? "text-accent"
-                    : "text-ink"
-                )}
-              >
-                {option.label}
-              </button>
-
-            </li>
-
-          ))}
-
-        </ul>
-      )}
-
-    </div>
+      <MonthPicker
+        open={openPicker}
+        year={selectedYear}
+        onClose={() => setOpenPicker(false)}
+      />
+    </>
   );
 }
