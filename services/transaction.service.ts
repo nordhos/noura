@@ -10,35 +10,35 @@ export interface TransactionPayload {
 }
 
 export async function createTransaction(
-    payload: TransactionPayload
-  ) {
-  
-    const [year, month] = payload.transactionDate
-      .split("-")
-      .map(Number);
-  
-    const { data, error } = await supabase
-      .from("transactions")
-      .insert({
-        profile_id: payload.profileId,
-        category_id: payload.categoryId,
-        type: payload.type,
-        amount: payload.amount,
-        description: payload.description,
-        transaction_date: payload.transactionDate,
-        year,
-        month,
-      })
-      .select()
-      .single();
-  
-    if (error) {
-      console.error(error);
-      throw error;
-    }
-  
-    return data;
+  payload: TransactionPayload
+) {
+
+  const [year, month] = payload.transactionDate
+    .split("-")
+    .map(Number);
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert({
+      profile_id: payload.profileId,
+      category_id: payload.categoryId,
+      type: payload.type,
+      amount: payload.amount,
+      description: payload.description,
+      transaction_date: payload.transactionDate,
+      year,
+      month,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw error;
   }
+
+  return data;
+}
 
 export async function getTransactions(
   year: number,
@@ -62,11 +62,11 @@ export async function getTransactions(
     .eq("year", year)
     .eq("month", month)
     .order("transaction_date", {
-        ascending: false,
-      })
-      .order("created_at", {
-        ascending: false,
-      });
+      ascending: false,
+    })
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) {
     throw error;
@@ -75,10 +75,13 @@ export async function getTransactions(
   return data ?? [];
 }
 
-export async function getRecentTransactions() {
-    const { data, error } = await supabase
-      .from("transactions")
-      .select(`
+export async function getRecentTransactions(
+  year: number,
+  month: number
+) {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(`
         *,
         profiles (
           name,
@@ -91,23 +94,25 @@ export async function getRecentTransactions() {
           type
         )
       `)
-      .order("transaction_date", {
-        ascending: false,
-      })
-      .order("created_at", {
-        ascending: false,
-      })
-      .limit(5);
-  
-    if (error) throw error;
-  
-    return data ?? [];
-  }
+    .eq("year", year)
+    .eq("month", month)
+    .order("transaction_date", {
+      ascending: false,
+    })
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(5);
 
-  export async function getAllTransactions() {
-    const { data, error } = await supabase
-      .from("transactions")
-      .select(`
+  if (error) throw error;
+
+  return data ?? [];
+}
+
+export async function getAllTransactions() {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(`
         *,
         profiles (
           name,
@@ -120,29 +125,29 @@ export async function getRecentTransactions() {
           type
         )
       `)
-      .order("transaction_date", {
-        ascending: false,
-      })
-      .order("created_at", {
-        ascending: false,
-      });
-  
-    if (error) {
-      throw error;
-    }
-  
-    return data ?? [];
+    .order("transaction_date", {
+      ascending: false,
+    })
+    .order("created_at", {
+      ascending: false,
+    });
+
+  if (error) {
+    throw error;
   }
 
-  export async function deleteTransaction(
-    id: string
-  ) {
-    const { error } = await supabase
-      .from("transactions")
-      .delete()
-      .eq("id", id);
-  
-    if (error) {
-      throw error;
-    }
+  return data ?? [];
+}
+
+export async function deleteTransaction(
+  id: string
+) {
+  const { error } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw error;
   }
+}

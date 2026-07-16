@@ -3,13 +3,23 @@
 import { useRecentTransactions } from "@/hooks/useTransactions";
 import { TransactionItem } from "./TransactionItem";
 import { useRouter } from "next/navigation";
+import { useFinanceStore } from "@/stores/useFinanceStore";
 
 export default function RecentTransactions() {
     const router = useRouter();
+
+    const {
+        selectedYear,
+        selectedMonth,
+      } = useFinanceStore();
+
     const {
         data = [],
         isLoading,
-    } = useRecentTransactions();
+    } = useRecentTransactions(
+        selectedYear,
+        selectedMonth
+      );
 
     if (isLoading) {
         return (

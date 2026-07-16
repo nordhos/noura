@@ -41,19 +41,25 @@ export default function DashboardPage() {
       const transactions =
         await getAllTransactions();
   
-      const periods = Array.from(
-        new Map(
-          transactions.map(
-            (item: any) => [
-              `${item.year}-${item.month}`,
-              {
-                year: item.year,
-                month: item.month,
-              },
-            ]
-          )
-        ).values()
-      );
+        const periods = Array.from(
+          new Map(
+            transactions.map(
+              (item: any) => [
+                `${item.year}-${item.month}`,
+                {
+                  year: item.year,
+                  month: item.month,
+                },
+              ]
+            )
+          ).values()
+        ).sort((a, b) => {
+          if (a.year !== b.year) {
+            return a.year - b.year;
+          }
+        
+          return a.month - b.month;
+        });
   
       setAvailablePeriods(periods);
     }

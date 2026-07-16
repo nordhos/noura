@@ -7,13 +7,13 @@ import {
 } from "@tanstack/react-query";
 
 import {
-    createTransaction,
-    deleteTransaction,
-    getTransactions,
-    getRecentTransactions,
-    getAllTransactions,
-    type TransactionPayload,
-  } from "@/services/transaction.service";
+  createTransaction,
+  deleteTransaction,
+  getTransactions,
+  getRecentTransactions,
+  getAllTransactions,
+  type TransactionPayload,
+} from "@/services/transaction.service";
 
 export function useTransactions(
   year: number,
@@ -25,10 +25,22 @@ export function useTransactions(
   });
 }
 
-export function useRecentTransactions() {
+export function useRecentTransactions(
+  year: number,
+  month: number
+) {
   return useQuery({
-    queryKey: ["recent-transactions"],
-    queryFn: getRecentTransactions,
+    queryKey: [
+      "recent-transactions",
+      year,
+      month,
+    ],
+
+    queryFn: () =>
+      getRecentTransactions(
+        year,
+        month
+      ),
   });
 }
 
@@ -71,31 +83,31 @@ export function useCreateTransaction() {
 }
 
 export function useDeleteTransaction() {
-    const queryClient = useQueryClient();
-  
-    return useMutation({
-      mutationFn: deleteTransaction,
-  
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["transactions"],
-        });
-  
-        queryClient.invalidateQueries({
-          queryKey: ["recent-transactions"],
-        });
-  
-        queryClient.invalidateQueries({
-          queryKey: ["all-transactions"],
-        });
-  
-        queryClient.invalidateQueries({
-          queryKey: ["dashboard"],
-        });
-  
-        queryClient.invalidateQueries({
-          queryKey: ["profiles"],
-        });
-      },
-    });
-  }
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteTransaction,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["recent-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["all-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["profiles"],
+      });
+    },
+  });
+}
