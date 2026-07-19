@@ -13,6 +13,7 @@ import { navItems } from "@/lib/mock-data";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useFinanceStore } from "@/stores/useFinanceStore";
 import { isAuthenticated } from "@/hooks/useAuth";
+import { useProfiles } from "@/hooks/useProfiles";
 import { useDashboard } from "@/hooks/useDashboard";
 
 export default function TransactionPage() {
@@ -33,6 +34,9 @@ export default function TransactionPage() {
 
   const { data: dashboard } =
     useDashboard();
+
+  const { data: profiles = [] } = useProfiles();
+
 
   const periodLabel = new Intl.DateTimeFormat(
     "id-ID",
@@ -56,8 +60,10 @@ export default function TransactionPage() {
   const balance =
     dashboard?.balance.total ?? 0;
 
-  const startingBalance =
-    dashboard?.startingBalance.total ?? 0;
+  const startingBalance = profiles.reduce(
+    (total, profile) => total + profile.savings,
+    0
+  );
 
   const transactionCount =
     data.length;
@@ -101,7 +107,7 @@ export default function TransactionPage() {
 
           <div className="flex items-center gap-3">
 
-          <BackButton href="/dashboard" />
+            <BackButton href="/dashboard" />
 
             <div>
 

@@ -62,6 +62,10 @@ export async function getReportSummary(): Promise<ReportSummary> {
 
   if (profileError) throw profileError;
 
+  // ======================================
+  // PROFILE CONFIGURATION
+  // ======================================
+
   const husband = profiles?.find(
     (item) => item.role === "husband"
   );
@@ -88,6 +92,10 @@ export async function getReportSummary(): Promise<ReportSummary> {
 
   const startingBalance =
     husbandSavings + wifeSavings;
+
+  // ======================================
+  // TRANSACTION DATA
+  // ======================================
 
   const {
     data: transactions,
@@ -117,16 +125,19 @@ export async function getReportSummary(): Promise<ReportSummary> {
   const list =
     (transactions ?? []) as Transaction[];
 
+  // ======================================
+  // TRANSACTION SUMMARY
+  // ======================================
+
+  let husbandIncome = 0;
+  let wifeIncome = 0;
+
+  let totalExpense = 0;
+
   const monthlyMap = new Map<
     string,
     MonthlyCashFlow
   >();
-
-  let husbandIncome = 0;
-
-  let wifeIncome = 0;
-
-  let totalExpense = 0;
 
   for (const item of list) {
     const amount = Number(item.amount);
@@ -174,6 +185,10 @@ export async function getReportSummary(): Promise<ReportSummary> {
       current.expense;
   }
 
+  // ======================================
+  // LIFETIME SUMMARY
+  // ======================================
+
   const totalIncome =
     husbandSalary +
     wifeSalary +
@@ -188,22 +203,22 @@ export async function getReportSummary(): Promise<ReportSummary> {
     startingBalance +
     netCashFlow;
 
-    return {
-      startingBalance,
-    
-      totalIncome,
-    
-      totalExpense,
-    
-      totalBalance,
-    
-      totalTransaction:
-        list.length,
-    
-      netCashFlow,
-    
-      monthly: Array.from(
-        monthlyMap.values()
-      ),
-    };
+  return {
+    startingBalance,
+
+    totalIncome,
+
+    totalExpense,
+
+    totalBalance,
+
+    totalTransaction:
+      list.length,
+
+    netCashFlow,
+
+    monthly: Array.from(
+      monthlyMap.values()
+    ),
+  };
 }
