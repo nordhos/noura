@@ -70,7 +70,7 @@ export default function ReportPage() {
                         </h1>
 
                         <p className="mt-1 text-sm text-zinc-400">
-                            Ringkasan keuanganmu sejak awal menggunakan NOURA.
+                            Ringkasan keuanganmu sejak pertama menggunakan NOURA.
                         </p>
 
                     </div>
@@ -88,7 +88,7 @@ export default function ReportPage() {
                             <div>
 
                                 <p className="text-sm text-zinc-400">
-                                    Saldo Saat Ini
+                                Total Saldo Akumulatif
                                 </p>
 
                                 <h2 className="mt-3 text-4xl font-bold text-white">
@@ -96,7 +96,7 @@ export default function ReportPage() {
                                 </h2>
 
                                 <p className="mt-3 text-sm text-accent">
-                                    Terhitung dari pertama menggunakan NOURA
+                                    Sejak pertama menggunakan NOURA
                                 </p>
 
                             </div>

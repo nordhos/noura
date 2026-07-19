@@ -74,14 +74,6 @@ export async function getReportSummary(): Promise<ReportSummary> {
     (item) => item.role === "wife"
   );
 
-  const husbandSalary = Number(
-    husband?.salary ?? 0
-  );
-
-  const wifeSalary = Number(
-    wife?.salary ?? 0
-  );
-
   const husbandSavings = Number(
     husband?.savings ?? 0
   );
@@ -89,6 +81,9 @@ export async function getReportSummary(): Promise<ReportSummary> {
   const wifeSavings = Number(
     wife?.savings ?? 0
   );
+
+  // Starting Balance
+  // = Total tabungan saat mulai menggunakan NOURA
 
   const startingBalance =
     husbandSavings + wifeSavings;
@@ -129,8 +124,7 @@ export async function getReportSummary(): Promise<ReportSummary> {
   // TRANSACTION SUMMARY
   // ======================================
 
-  let husbandIncome = 0;
-  let wifeIncome = 0;
+  let totalIncome = 0;
 
   let totalExpense = 0;
 
@@ -141,18 +135,9 @@ export async function getReportSummary(): Promise<ReportSummary> {
 
   for (const item of list) {
     const amount = Number(item.amount);
-    if (
-      item.type === "income" &&
-      item.profile_id === husband?.id
-    ) {
-      husbandIncome += amount;
-    }
 
-    if (
-      item.type === "income" &&
-      item.profile_id === wife?.id
-    ) {
-      wifeIncome += amount;
+    if (item.type === "income") {
+      totalIncome += amount;
     }
 
     if (item.type === "expense") {
@@ -189,15 +174,18 @@ export async function getReportSummary(): Promise<ReportSummary> {
   // LIFETIME SUMMARY
   // ======================================
 
-  const totalIncome =
-    husbandSalary +
-    wifeSalary +
-    husbandIncome +
-    wifeIncome;
+  // Total Income berasal murni dari transaksi.
+  // Salary pada tabel profiles hanya digunakan
+  // sebagai konfigurasi Auto Salary.
 
   const netCashFlow =
     totalIncome -
     totalExpense;
+
+  // Current Balance
+  // = Starting Balance
+  // + Total Income
+  // - Total Expense
 
   const totalBalance =
     startingBalance +

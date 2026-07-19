@@ -103,11 +103,13 @@ export function TransactionForm({
     } catch (error) {
 
       console.error(error);
-
+    
       toast.error(
-        "Gagal menyimpan transaksi"
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menyimpan transaksi."
       );
-
+    
     }
 
   }

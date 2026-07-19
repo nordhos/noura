@@ -20,6 +20,8 @@ import {
   getAllTransactions,
 } from "@/services/transaction.service";
 
+import { syncRecurringTransactions } from "@/services/recurring.service";
+
 import { useFinanceStore } from "@/stores/useFinanceStore";
 
 export default function DashboardPage() {
@@ -66,6 +68,21 @@ export default function DashboardPage() {
   
     loadPeriods();
   }, [setAvailablePeriods]);
+
+  useEffect(() => {
+    async function initializeRecurring() {
+      try {
+        await syncRecurringTransactions();
+      } catch (error) {
+        console.error(
+          "[Recurring]",
+          error
+        );
+      }
+    }
+  
+    initializeRecurring();
+  }, []);
 
   if (isLoading) {
     return (

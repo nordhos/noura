@@ -68,15 +68,11 @@ export function EditProfileSheet({
 
     if (!profile) return;
 
-    const payload: UpdateProfilePayload = {
+    const payload = {
       id: profile.id,
-
-      name: name.trim(),
-
+      name,
       salary: Number(salary),
-
       payday: Number(payday),
-
       savings: Number(savings),
     };
 
@@ -167,7 +163,7 @@ export function EditProfileSheet({
         <FormField>
 
           <label className="text-sm text-zinc-400">
-            Saldo Saat Mulai
+            Tabungan Saat Ini
           </label>
 
           <Input
