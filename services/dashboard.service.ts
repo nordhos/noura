@@ -1,11 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
 export interface DashboardSummary {
-  startingBalance: {
-    husband: number;
-    wife: number;
-    total: number;
-  };
 
   incomes: {
     husband: number;
@@ -49,6 +44,7 @@ export async function getDashboardSummary(
     .select("id, role, salary, savings");
 
   if (profileError) {
+    console.error("PROFILE ERROR:", profileError);
     throw profileError;
   }
 
@@ -73,18 +69,6 @@ export async function getDashboardSummary(
   const wifeSalary =
     Number(wife?.salary ?? 0);
 
-  const husbandSavings =
-    Number(husband?.savings ?? 0);
-
-  const wifeSavings =
-    Number(wife?.savings ?? 0);
-
-  const totalSavings =
-    husbandSavings + wifeSavings;
-
-  const startingBalance =
-    totalSavings;
-
   const {
     data: transactions,
     error: transactionError,
@@ -99,6 +83,7 @@ export async function getDashboardSummary(
     .eq("month", month);
 
   if (transactionError) {
+    console.error("TRANSACTION ERROR:", transactionError);
     throw transactionError;
   }
 
@@ -163,17 +148,11 @@ export async function getDashboardSummary(
     husbandTotal +
     wifeTotal;
 
-  const balance =
-    totalSavings +
+    const monthlyBalance =
     totalIncome -
     totalExpense;
 
     return {
-      startingBalance: {
-        husband: husbandSavings,
-        wife: wifeSavings,
-        total: startingBalance,
-      },
     
       incomes: {
         husband: husbandTotal,
@@ -193,14 +172,13 @@ export async function getDashboardSummary(
       },
     
       balance: {
-        total: balance,
+        total: monthlyBalance,
         percentage:
           totalIncome === 0
             ? 0
             : Math.round(
-                (balance / totalIncome) *
-                  100
+                (monthlyBalance / totalIncome) * 100
               ),
-      },
+      }
     };
 }
