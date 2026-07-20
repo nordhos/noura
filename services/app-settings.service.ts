@@ -3,7 +3,13 @@ import { supabase } from "@/lib/supabase";
 export interface AppSetting {
   id: string;
   financial_start_date: string;
+  starting_balance: number;
   created_at: string;
+}
+
+export interface SaveAppSettingInput {
+  financialStartDate: string;
+  startingBalance: number;
 }
 
 export async function getAppSetting(): Promise<AppSetting | null> {
@@ -19,24 +25,37 @@ export async function getAppSetting(): Promise<AppSetting | null> {
   return data;
 }
 
-export async function initializeFinancialStartDate(): Promise<void> {
-  const setting = await getAppSetting();
+export async function saveAppSetting(
+  input: SaveAppSettingInput
+): Promise<AppSetting> {
+  const existing = await getAppSetting();
 
-  if (setting) {
-    return;
+  if (existing) {
+    const { data, error } = await supabase
+      .from("app_setting")
+      .update({
+        financial_start_date: input.financialStartDate,
+        starting_balance: input.startingBalance,
+      })
+      .eq("id", existing.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
   }
 
-  const today = new Date()
-    .toISOString()
-    .split("T")[0];
-
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("app_setting")
     .insert({
-      financial_start_date: today,
-    });
+      financial_start_date: input.financialStartDate,
+      starting_balance: input.startingBalance,
+    })
+    .select()
+    .single();
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
+
+  return data;
 }
