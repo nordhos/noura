@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -9,7 +9,10 @@ import {
   formatIDRInput,
   parseIDRInput,
 } from "@/lib/format-currency";
-import { saveAppSetting } from "@/services/app-settings.service";
+import {
+  getAppSetting,
+  saveAppSetting,
+} from "@/services/app-settings.service";
 
 function todayString() {
   return new Date().toISOString().split("T")[0];
@@ -24,9 +27,30 @@ function minDateString() {
 export default function FinancialSetupPage() {
   const router = useRouter();
 
+  const [checking, setChecking] = useState(true);
+  const [loading, setLoading] = useState(false);
+
   const [date, setDate] = useState(todayString());
   const [balance, setBalance] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function checkSetup() {
+      try {
+        const appSetting = await getAppSetting();
+
+        if (appSetting) {
+          router.replace("/dashboard");
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setChecking(false);
+      }
+    }
+
+    checkSetup();
+  }, [router]);
 
   const isDateValid = useMemo(() => {
     return (
@@ -37,12 +61,14 @@ export default function FinancialSetupPage() {
 
   const balanceNumber = Number(parseIDRInput(balance) || "0");
 
-  const isBalanceValid = balance !== "";
+  const isBalanceValid =
+    balance !== "" && balanceNumber >= 0;
 
   const canSubmit =
+    !checking &&
+    !loading &&
     isDateValid &&
-    isBalanceValid &&
-    !loading;
+    isBalanceValid;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -63,6 +89,15 @@ export default function FinancialSetupPage() {
     } catch (error) {
       console.error(error);
 
+      if (
+        error instanceof Error &&
+        error.message ===
+          "Financial setup already completed."
+      ) {
+        router.replace("/dashboard");
+        return;
+      }
+
       toast.error(
         "Terjadi kesalahan saat menyimpan data."
       );
@@ -71,9 +106,18 @@ export default function FinancialSetupPage() {
     }
   }
 
+  if (checking) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-zinc-500">
+          Memuat...
+        </p>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
-
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold">
           Selamat Datang di NOURA
@@ -85,7 +129,6 @@ export default function FinancialSetupPage() {
       </div>
 
       <div className="mt-10 space-y-6">
-
         <div className="space-y-2">
           <label className="text-sm text-zinc-400">
             Tanggal Mulai Pencatatan
@@ -101,7 +144,9 @@ export default function FinancialSetupPage() {
           />
 
           <p className="text-xs text-zinc-500">
-            Tanggal mulai pencatatan hanya dapat ditentukan saat pertama kali menggunakan NOURA.
+            Tanggal mulai pencatatan hanya dapat
+            ditentukan saat pertama kali menggunakan
+            NOURA.
           </p>
         </div>
 
@@ -123,14 +168,14 @@ export default function FinancialSetupPage() {
             className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
           />
         </div>
-
       </div>
 
       <div className="mt-8 rounded-2xl bg-zinc-900 p-4 text-sm text-zinc-400">
         Masukkan saldo yang Anda miliki saat ini.
         <br />
         <br />
-        NOURA akan mulai mencatat seluruh transaksi setelah tanggal yang Anda pilih.
+        NOURA akan mulai mencatat seluruh transaksi
+        setelah tanggal yang Anda pilih.
       </div>
 
       <div className="mt-auto pt-10">
@@ -143,7 +188,6 @@ export default function FinancialSetupPage() {
             : "Mulai Menggunakan NOURA"}
         </Button>
       </div>
-
     </main>
   );
 }
