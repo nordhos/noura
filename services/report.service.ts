@@ -24,11 +24,8 @@ export interface ReportSummary {
   monthly: MonthlyCashFlow[];
 }
 
-interface Profile {
-  id: string;
-  role: "husband" | "wife";
-  salary: number | string;
-  savings: number | string;
+interface AppSetting {
+  starting_balance: number | string;
 }
 
 interface Transaction {
@@ -55,38 +52,25 @@ const MONTHS = [
 ];
 
 export async function getReportSummary(): Promise<ReportSummary> {
-  const { data: profiles, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select("id, role, salary, savings");
-
-  if (profileError) throw profileError;
-
   // ======================================
-  // PROFILE CONFIGURATION
+  // APP SETTING
   // ======================================
 
-  const husband = profiles?.find(
-    (item) => item.role === "husband"
+  const {
+    data: appSetting,
+    error: appSettingError,
+  } = await supabase
+    .from("app_setting")
+    .select("starting_balance")
+    .maybeSingle();
+
+  if (appSettingError) {
+    throw appSettingError;
+  }
+
+  const startingBalance = Number(
+    (appSetting as AppSetting | null)?.starting_balance ?? 0
   );
-
-  const wife = profiles?.find(
-    (item) => item.role === "wife"
-  );
-
-  const husbandSavings = Number(
-    husband?.savings ?? 0
-  );
-
-  const wifeSavings = Number(
-    wife?.savings ?? 0
-  );
-
-  // Starting Balance
-  // = Total tabungan saat mulai menggunakan NOURA
-
-  const startingBalance =
-    husbandSavings + wifeSavings;
 
   // ======================================
   // TRANSACTION DATA
@@ -114,8 +98,9 @@ export async function getReportSummary(): Promise<ReportSummary> {
       ascending: true,
     });
 
-  if (transactionError)
+  if (transactionError) {
     throw transactionError;
+  }
 
   const list =
     (transactions ?? []) as Transaction[];
@@ -125,7 +110,6 @@ export async function getReportSummary(): Promise<ReportSummary> {
   // ======================================
 
   let totalIncome = 0;
-
   let totalExpense = 0;
 
   const monthlyMap = new Map<
@@ -138,9 +122,7 @@ export async function getReportSummary(): Promise<ReportSummary> {
 
     if (item.type === "income") {
       totalIncome += amount;
-    }
-
-    if (item.type === "expense") {
+    } else {
       totalExpense += amount;
     }
 
@@ -156,8 +138,7 @@ export async function getReportSummary(): Promise<ReportSummary> {
       });
     }
 
-    const current =
-      monthlyMap.get(key)!;
+    const current = monthlyMap.get(key)!;
 
     if (item.type === "income") {
       current.income += amount;
@@ -174,18 +155,9 @@ export async function getReportSummary(): Promise<ReportSummary> {
   // LIFETIME SUMMARY
   // ======================================
 
-  // Total Income berasal murni dari transaksi.
-  // Salary pada tabel profiles hanya digunakan
-  // sebagai konfigurasi Auto Salary.
-
   const netCashFlow =
     totalIncome -
     totalExpense;
-
-  // Current Balance
-  // = Starting Balance
-  // + Total Income
-  // - Total Expense
 
   const totalBalance =
     startingBalance +
@@ -200,8 +172,7 @@ export async function getReportSummary(): Promise<ReportSummary> {
 
     totalBalance,
 
-    totalTransaction:
-      list.length,
+    totalTransaction: list.length,
 
     netCashFlow,
 
