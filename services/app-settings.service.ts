@@ -28,22 +28,12 @@ export async function getAppSetting(): Promise<AppSetting | null> {
 export async function saveAppSetting(
   input: SaveAppSettingInput
 ): Promise<AppSetting> {
+  // Financial Setup hanya boleh dilakukan satu kali.
+  // Jika data sudah ada, onboarding dianggap selesai.
   const existing = await getAppSetting();
 
   if (existing) {
-    const { data, error } = await supabase
-      .from("app_setting")
-      .update({
-        financial_start_date: input.financialStartDate,
-        starting_balance: input.startingBalance,
-      })
-      .eq("id", existing.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return data;
+    throw new Error("Financial setup already completed.");
   }
 
   const { data, error } = await supabase
@@ -55,7 +45,9 @@ export async function saveAppSetting(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 }
