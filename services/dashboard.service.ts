@@ -1,7 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
 export interface DashboardSummary {
-
   incomes: {
     husband: number;
     wife: number;
@@ -22,8 +21,6 @@ export interface DashboardSummary {
 interface Profile {
   id: string;
   role: "husband" | "wife";
-  salary: number | string;
-  savings: number | string;
 }
 
 interface Transaction {
@@ -41,7 +38,7 @@ export async function getDashboardSummary(
     error: profileError,
   } = await supabase
     .from("profiles")
-    .select("id, role, salary, savings");
+    .select("id, role");
 
   if (profileError) {
     console.error("PROFILE ERROR:", profileError);
@@ -63,12 +60,6 @@ export async function getDashboardSummary(
         profile.role === "wife"
     );
 
-  const husbandSalary =
-    Number(husband?.salary ?? 0);
-
-  const wifeSalary =
-    Number(wife?.salary ?? 0);
-
   const {
     data: transactions,
     error: transactionError,
@@ -83,7 +74,10 @@ export async function getDashboardSummary(
     .eq("month", month);
 
   if (transactionError) {
-    console.error("TRANSACTION ERROR:", transactionError);
+    console.error(
+      "TRANSACTION ERROR:",
+      transactionError
+    );
     throw transactionError;
   }
 
@@ -95,9 +89,9 @@ export async function getDashboardSummary(
       .filter(
         (transaction) =>
           transaction.type ===
-          "income" &&
+            "income" &&
           transaction.profile_id ===
-          husband?.id
+            husband?.id
       )
       .reduce(
         (total, transaction) =>
@@ -111,9 +105,9 @@ export async function getDashboardSummary(
       .filter(
         (transaction) =>
           transaction.type ===
-          "income" &&
+            "income" &&
           transaction.profile_id ===
-          wife?.id
+            wife?.id
       )
       .reduce(
         (total, transaction) =>
@@ -121,6 +115,9 @@ export async function getDashboardSummary(
           Number(transaction.amount),
         0
       );
+
+  const totalIncome =
+    husbandIncome + wifeIncome;
 
   const totalExpense =
     transactionList
@@ -136,49 +133,39 @@ export async function getDashboardSummary(
         0
       );
 
-  const husbandTotal =
-    husbandSalary +
-    husbandIncome;
-
-  const wifeTotal =
-    wifeSalary +
-    wifeIncome;
-
-  const totalIncome =
-    husbandTotal +
-    wifeTotal;
-
-    const monthlyBalance =
+  const monthlyBalance =
     totalIncome -
     totalExpense;
 
-    return {
-    
-      incomes: {
-        husband: husbandTotal,
-        wife: wifeTotal,
-        total: totalIncome,
-      },
-    
-      expenses: {
-        total: totalExpense,
-        percentage:
-          totalIncome === 0
-            ? 0
-            : Math.round(
-                (totalExpense / totalIncome) *
-                  100
-              ),
-      },
-    
-      balance: {
-        total: monthlyBalance,
-        percentage:
-          totalIncome === 0
-            ? 0
-            : Math.round(
-                (monthlyBalance / totalIncome) * 100
-              ),
-      }
-    };
+  return {
+    incomes: {
+      husband: husbandIncome,
+      wife: wifeIncome,
+      total: totalIncome,
+    },
+
+    expenses: {
+      total: totalExpense,
+      percentage:
+        totalIncome === 0
+          ? 0
+          : Math.round(
+              (totalExpense /
+                totalIncome) *
+                100
+            ),
+    },
+
+    balance: {
+      total: monthlyBalance,
+      percentage:
+        totalIncome === 0
+          ? 0
+          : Math.round(
+              (monthlyBalance /
+                totalIncome) *
+                100
+            ),
+    },
+  };
 }

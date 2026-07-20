@@ -70,7 +70,7 @@ export default function ReportPage() {
                         </h1>
 
                         <p className="mt-1 text-sm text-zinc-400">
-                            Ringkasan keuanganmu sejak pertama menggunakan NOURA.
+                            Ringkasan laporan keuanganmu sejak pertama menggunakan NOURA.
                         </p>
 
                     </div>
