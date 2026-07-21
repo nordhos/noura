@@ -24,13 +24,6 @@ export interface ReportSummary {
   monthly: MonthlyCashFlow[];
 }
 
-interface Profile {
-  id: string;
-  role: "husband" | "wife";
-  salary: number | string;
-  savings: number | string;
-}
-
 interface Transaction {
   profile_id: string;
   amount: number | string;
@@ -55,38 +48,6 @@ const MONTHS = [
 ];
 
 export async function getReportSummary(): Promise<ReportSummary> {
-  const { data: profiles, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select("id, role, salary, savings");
-
-  if (profileError) throw profileError;
-
-  // ======================================
-  // PROFILE CONFIGURATION
-  // ======================================
-
-  const husband = profiles?.find(
-    (item) => item.role === "husband"
-  );
-
-  const wife = profiles?.find(
-    (item) => item.role === "wife"
-  );
-
-  const husbandSavings = Number(
-    husband?.savings ?? 0
-  );
-
-  const wifeSavings = Number(
-    wife?.savings ?? 0
-  );
-
-  // Starting Balance
-  // = Total tabungan saat mulai menggunakan NOURA
-
-  const startingBalance =
-    husbandSavings + wifeSavings;
 
   // ======================================
   // TRANSACTION DATA
@@ -179,20 +140,17 @@ export async function getReportSummary(): Promise<ReportSummary> {
   // sebagai konfigurasi Auto Salary.
 
   const netCashFlow =
-    totalIncome -
-    totalExpense;
-
-  // Current Balance
-  // = Starting Balance
-  // + Total Income
-  // - Total Expense
+    totalIncome - totalExpense;
 
   const totalBalance =
-    startingBalance +
     netCashFlow;
 
+  // TODO Sprint 2.2
+  // startingBalance akan dihapus setelah onboarding
+  // membuat transaksi kategori "Saldo Awal".
+
   return {
-    startingBalance,
+    startingBalance: 0,
 
     totalIncome,
 

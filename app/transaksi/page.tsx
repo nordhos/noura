@@ -13,7 +13,6 @@ import { navItems } from "@/lib/mock-data";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useFinanceStore } from "@/stores/useFinanceStore";
 import { isAuthenticated } from "@/hooks/useAuth";
-import { useProfiles } from "@/hooks/useProfiles";
 import { useDashboard } from "@/hooks/useDashboard";
 
 export default function TransactionPage() {
@@ -34,8 +33,6 @@ export default function TransactionPage() {
 
   const { data: dashboard } =
     useDashboard();
-
-  const { data: profiles = [] } = useProfiles();
 
 
   const periodLabel = new Intl.DateTimeFormat(
@@ -60,10 +57,13 @@ export default function TransactionPage() {
   const balance =
     dashboard?.balance.total ?? 0;
 
-  const startingBalance = profiles.reduce(
-    (total, profile) => total + profile.savings,
-    0
-  );
+  // TODO Sprint 2.2
+  // startingBalance dipertahankan sementara
+  // untuk kompatibilitas PDF lama.
+  // Akan dihapus setelah PDF mengikuti
+  // arsitektur Financial Engine v2.
+
+  const startingBalance = 0;
 
   const transactionCount =
     data.length;
