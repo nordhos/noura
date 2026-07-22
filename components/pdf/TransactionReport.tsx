@@ -203,7 +203,7 @@ export function TransactionReport({
                 </Text>
 
                 <Text style={styles.tagline}>
-                    Personal Finance System
+                    Financial Clarity System
                 </Text>
 
                 <Text style={styles.title}>

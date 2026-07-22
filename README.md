@@ -1,7 +1,7 @@
 # NOURA Dashboard
 
 Next.js (App Router) + TypeScript + Tailwind reconstruction of the NOURA
-"Personal Finance System" home screen, broken into reusable components.
+"Financial Clarity System" home screen, broken into reusable components.
 
 ## Setup
 
