@@ -13,8 +13,6 @@ WHERE is_default = true;
 INSERT INTO transaction_categories (name, type, is_default)
 VALUES
 
-COMMIT;
-
 -- ==========================
 -- INCOME
 -- ==========================
@@ -47,3 +45,5 @@ COMMIT;
 ('Parkir', 'expense', true),
 ('Donasi', 'expense', true),
 ('Lainnya', 'expense', true);
+
+COMMIT;
