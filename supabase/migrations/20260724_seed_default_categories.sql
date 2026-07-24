@@ -5,10 +5,15 @@
 -- Development only
 -- Safe because NOURA is still in early stage.
 
-DELETE FROM transaction_categories;
+BEGIN;
+
+DELETE FROM transaction_categories
+WHERE is_default = true;
 
 INSERT INTO transaction_categories (name, type, is_default)
 VALUES
+
+COMMIT;
 
 -- ==========================
 -- INCOME
