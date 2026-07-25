@@ -1,8 +1,14 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmBottomSheet } from "@/components/ui/ConfirmBottomSheet";
 import { formatIDR } from "@/lib/format-currency";
 import { useDeleteTransaction } from "@/hooks/useTransactions";
 
@@ -27,6 +33,9 @@ export function TransactionItem({
 
   const mutation = useDeleteTransaction();
 
+  const [openConfirm, setOpenConfirm] =
+    useState(false);
+
   async function handleDelete() {
     try {
       await mutation.mutateAsync(id);
@@ -42,62 +51,74 @@ export function TransactionItem({
   }
 
   return (
-    <div className="flex items-center justify-between py-3">
+    <>
+      <div className="flex items-center justify-between py-3">
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
+              income
+                ? "bg-emerald-500/15 text-emerald-400"
+                : "bg-red-500/15 text-red-400"
+            }`}
+          >
+            {income ? (
+              <ArrowDownLeft size={18} />
+            ) : (
+              <ArrowUpRight size={18} />
+            )}
+          </div>
 
-      <div className="flex items-center gap-3">
+          <div>
+            <p className="font-medium text-white">
+              {category}
+            </p>
 
-        <div
-          className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
-            income
-              ? "bg-emerald-500/15 text-emerald-400"
-              : "bg-red-500/15 text-red-400"
-          }`}
-        >
-          {income ? (
-            <ArrowDownLeft size={18} />
-          ) : (
-            <ArrowUpRight size={18} />
-          )}
+            <p className="text-sm text-zinc-400">
+              {profile}
+              {" • "}
+              {date}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <p className="font-medium text-white">
-            {category}
+        <div className="flex items-center gap-3">
+          <p
+            className={`font-semibold ${
+              income
+                ? "text-emerald-400"
+                : "text-red-400"
+            }`}
+          >
+            {income ? "+" : "-"}
+            {formatIDR(amount)}
           </p>
 
-          <p className="text-sm text-zinc-400">
-            {profile}
-            {" • "}
-            {date}
-          </p>
+          <button
+            type="button"
+            onClick={() =>
+              setOpenConfirm(true)
+            }
+            disabled={mutation.isPending}
+            className="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-800 hover:text-red-400"
+          >
+            <Trash2 size={17} />
+          </button>
         </div>
-
       </div>
 
-      <div className="flex items-center gap-3">
-
-        <p
-          className={`font-semibold ${
-            income
-              ? "text-emerald-400"
-              : "text-red-400"
-          }`}
-        >
-          {income ? "+" : "-"}
-          {formatIDR(amount)}
-        </p>
-
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={mutation.isPending}
-          className="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-800 hover:text-red-400"
-        >
-          <Trash2 size={17} />
-        </button>
-
-      </div>
-
-    </div>
+      <ConfirmBottomSheet
+        open={openConfirm}
+        title="Hapus Transaksi"
+        description="Apakah Anda yakin ingin menghapus transaksi ini?"
+        loading={mutation.isPending}
+        onCancel={() =>
+          setOpenConfirm(false)
+        }
+        onConfirm={async () => {
+          await handleDelete();
+          setOpenConfirm(false);
+        }}
+      />
+    </>
   );
 }
