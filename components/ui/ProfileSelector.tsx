@@ -5,7 +5,6 @@ import { User } from "lucide-react";
 interface Profile {
   id: string;
   name: string;
-  role: "husband" | "wife";
 }
 
 interface ProfileSelectorProps {
@@ -21,15 +20,18 @@ export function ProfileSelector({
 }: ProfileSelectorProps) {
   return (
     <div className="space-y-3">
-
       <p className="text-sm text-zinc-400">
         Penerima
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
-
+      <div
+        className={`grid gap-3 ${
+          profiles.length === 1
+            ? "grid-cols-1"
+            : "grid-cols-2"
+        }`}
+      >
         {profiles.map((profile) => {
-
           const active = value === profile.id;
 
           return (
@@ -51,7 +53,6 @@ export function ProfileSelector({
               `}
             >
               <div className="mb-3 flex justify-center">
-
                 <div
                   className={`
                     flex
@@ -77,26 +78,15 @@ export function ProfileSelector({
                     }
                   />
                 </div>
-
               </div>
 
-              <p className="font-medium text-white">
+              <p className="text-lg font-medium text-white">
                 {profile.name}
               </p>
-
-              <p className="mt-1 text-xs text-zinc-500">
-                {profile.role === "husband"
-                  ? "Suami"
-                  : "Istri"}
-              </p>
-
             </button>
           );
-
         })}
-
       </div>
-
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { BackButton } from "@/components/ui/BackButton";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { navItems } from "@/lib/mock-data";
@@ -8,17 +9,15 @@ import { navItems } from "@/lib/mock-data";
 import {
   Pencil,
   User,
-  Wallet,
 } from "lucide-react";
 
 import { useProfiles } from "@/hooks/useProfiles";
 import { EditProfileSheet } from "./EditProfileSheet";
-import { formatIDR } from "@/lib/format-currency";
+
 import type { Profile } from "@/services/profile.service";
 
 export function ProfileScreen() {
-  const { data, isLoading } =
-    useProfiles();
+  const { data, isLoading } = useProfiles();
 
   const [selectedProfile, setSelectedProfile] =
     useState<Profile | null>(null);
@@ -26,9 +25,7 @@ export function ProfileScreen() {
   const [sheetOpen, setSheetOpen] =
     useState(false);
 
-  function openEditor(
-    profile: Profile
-  ) {
+  function openEditor(profile: Profile) {
     setSelectedProfile(profile);
     setSheetOpen(true);
   }
@@ -48,24 +45,12 @@ export function ProfileScreen() {
     );
   }
 
-  const husband =
-    data?.find(
-      (item) =>
-        item.role === "husband"
-    ) ?? null;
-
-  const wife =
-    data?.find(
-      (item) =>
-        item.role === "wife"
-    ) ?? null;
   return (
     <>
       <main className="mx-auto w-full max-w-md space-y-6 px-5 pb-28 pt-6">
 
         <header className="flex items-center gap-3">
-
-        <BackButton href="/dashboard" />
+          <BackButton href="/dashboard" />
 
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -73,51 +58,24 @@ export function ProfileScreen() {
             </h1>
 
             <p className="mt-1 text-sm text-zinc-400">
-              Konfigurasi Keuangan
+              Kelola profil yang menggunakan NOURA
             </p>
           </div>
-
         </header>
 
-        {husband && (
+        {data?.map((profile) => (
           <ProfileCard
-            title="Suami"
-            icon={
-              <User
-                size={22}
-                className="text-orange-400"
-              />
-            }
-            accent="bg-orange-500/10"
-            profile={husband}
-            onEdit={() =>
-              openEditor(husband)
-            }
+            key={profile.id}
+            profile={profile}
+            onEdit={() => openEditor(profile)}
           />
-        )}
+        ))}
 
-        {wife && (
-          <ProfileCard
-            title="Istri"
-            icon={
-              <Wallet
-                size={22}
-                className="text-pink-400"
-              />
-            }
-            accent="bg-pink-500/10"
-            profile={wife}
-            onEdit={() =>
-              openEditor(wife)
-            }
-          />
-        )}
-                <EditProfileSheet
+        <EditProfileSheet
           open={sheetOpen}
           profile={selectedProfile}
           onClose={closeEditor}
         />
-
       </main>
 
       <BottomNav items={navItems} />
@@ -126,40 +84,35 @@ export function ProfileScreen() {
 }
 
 interface ProfileCardProps {
-  title: string;
-  icon: React.ReactNode;
-  accent: string;
   profile: Profile;
   onEdit: () => void;
 }
 
 function ProfileCard({
-  title,
-  icon,
-  accent,
   profile,
   onEdit,
 }: ProfileCardProps) {
   return (
     <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
 
-      <div className="mb-5 flex items-center justify-between">
+      <div className="flex items-center justify-between">
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
 
-          <div
-            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${accent}`}
-          >
-            {icon}
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/10">
+            <User
+              size={22}
+              className="text-orange-400"
+            />
           </div>
 
           <div>
             <p className="text-lg font-semibold text-white">
-              {title}
+              {profile.name}
             </p>
 
             <p className="text-sm text-zinc-500">
-              Profil Keuangan
+              Profil Pengguna
             </p>
           </div>
 
@@ -175,48 +128,6 @@ function ProfileCard({
 
       </div>
 
-      <div className="space-y-4">
-        <PersonCard
-          label="Nama"
-          value={profile.name}
-        />
-
-        <PersonCard
-          label="Gaji Pokok"
-          value={formatIDR(profile.salary)}
-        />
-
-        <PersonCard
-          label="Tanggal Gajian"
-          value={`${profile.payday}`}
-        />
-
-      </div>
-
     </section>
-  );
-}
-
-interface PersonCardProps {
-  label: string;
-  value: string;
-}
-
-function PersonCard({
-  label,
-  value,
-}: PersonCardProps) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3">
-
-      <span className="text-sm text-zinc-400">
-        {label}
-      </span>
-
-      <span className="font-medium text-white">
-        {value}
-      </span>
-
-    </div>
   );
 }
