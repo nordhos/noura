@@ -3,13 +3,12 @@ import { supabase } from "@/lib/supabase";
 export interface AppSetting {
   id: string;
   financial_start_date: string;
-  starting_balance: number;
+  onboarding_completed: boolean;
   created_at: string;
 }
 
-export interface SaveAppSettingInput {
-  financialStartDate: string;
-  startingBalance: number;
+function todayString(): string {
+  return new Date().toISOString().split("T")[0];
 }
 
 export async function getAppSetting(): Promise<AppSetting | null> {
@@ -25,22 +24,18 @@ export async function getAppSetting(): Promise<AppSetting | null> {
   return data;
 }
 
-export async function saveAppSetting(
-  input: SaveAppSettingInput
-): Promise<AppSetting> {
-  // Financial Setup hanya boleh dilakukan satu kali.
-  // Jika data sudah ada, onboarding dianggap selesai.
+export async function completeOnboarding(): Promise<AppSetting> {
   const existing = await getAppSetting();
 
-  if (existing) {
+  if (existing?.onboarding_completed) {
     throw new Error("Financial setup already completed.");
   }
 
   const { data, error } = await supabase
     .from("app_setting")
     .insert({
-      financial_start_date: input.financialStartDate,
-      starting_balance: input.startingBalance,
+      financial_start_date: todayString(),
+      onboarding_completed: true,
     })
     .select()
     .single();

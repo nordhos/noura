@@ -1,52 +1,85 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from '@/lib/supabase';
 
 export interface Profile {
   id: string;
-  role: "husband" | "wife";
   name: string;
-  salary: number;
-  payday: number;
-  savings: number;
-}
-
-export interface UpdateProfilePayload {
-  id: string;
-  name: string;
-  salary: number;
-  payday: number;
-  savings: number;
+  created_at: string;
 }
 
 export async function getProfiles(): Promise<Profile[]> {
   const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("role", { ascending: true });
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(error.message);
+  }
 
-  return (data ?? []).map((item) => ({
-    id: item.id,
-    role: item.role,
-    name: item.name,
-    salary: Number(item.salary),
-    payday: Number(item.payday),
-    savings: Number(item.savings ?? 0),
-  }));
+  return data ?? [];
+}
+
+export async function getProfile(id: string): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function createProfile(name: string): Promise<Profile> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({
+      name: name.trim(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
 
 export async function updateProfile(
-  payload: UpdateProfilePayload
-) {
-  const { error } = await supabase
-    .from("profiles")
+  id: string,
+  name: string
+): Promise<Profile> {
+  const { data, error } = await supabase
+    .from('profiles')
     .update({
-      name: payload.name,
-      salary: payload.salary,
-      payday: payload.payday,
-      savings: payload.savings,
+      name: name.trim(),
     })
-    .eq("id", payload.id);
+    .eq('id', id)
+    .select()
+    .single();
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function deleteProfile(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

@@ -48,7 +48,7 @@ export function BalanceCard({ amount, percentage }: BalanceCardProps) {
       <WaveDecoration />
       <div className="relative flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="mb-2 text-sm text-ink-muted">Sisa Saldo</p>
+          <p className="mb-2 text-sm text-ink-muted">Sisa Saldo Bulan Ini</p>
           <p className="mb-1 truncate font-display text-3xl font-bold text-ink">{formatIDR(amount)}</p>
           <p className="text-sm text-ink-faint">
             <span className="font-medium text-accent">{pct}%</span> dari total penghasilan

@@ -1,35 +1,36 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { MonthSelector } from "@/components/dashboard/MonthSelector";
 import { IncomeCard } from "@/components/dashboard/IncomeCard";
 import { TotalIncomeCard } from "@/components/dashboard/TotalIncomeCard";
 import { ExpenseSummaryCard } from "@/components/dashboard/ExpenseSummaryCard";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
-import { BottomNav } from "@/components/layout/BottomNav";
+import { FinancialInsight } from "@/components/dashboard/FinancialInsight";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+import { BottomNav } from "@/components/layout/BottomNav";
+
 import { isAuthenticated } from "@/hooks/useAuth";
+import { useDashboard } from "@/hooks/useDashboard";
 
 import { navItems } from "@/lib/mock-data";
 
-import { useDashboard } from "@/hooks/useDashboard";
-
-import {
-  getAllTransactions,
-} from "@/services/transaction.service";
-
-import { syncRecurringTransactions } from "@/services/recurring.service";
+import { getAllTransactions } from "@/services/transaction.service";
 
 import { useFinanceStore } from "@/stores/useFinanceStore";
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
+
   const router = useRouter();
 
   const {
     setAvailablePeriods,
+    monthLabel,
   } = useFinanceStore();
 
   useEffect(() => {
@@ -42,47 +43,30 @@ export default function DashboardPage() {
     async function loadPeriods() {
       const transactions =
         await getAllTransactions();
-  
-        const periods = Array.from(
-          new Map(
-            transactions.map(
-              (item: any) => [
-                `${item.year}-${item.month}`,
-                {
-                  year: item.year,
-                  month: item.month,
-                },
-              ]
-            )
-          ).values()
-        ).sort((a, b) => {
-          if (a.year !== b.year) {
-            return a.year - b.year;
-          }
-        
-          return a.month - b.month;
-        });
-  
+
+      const periods = Array.from(
+        new Map(
+          transactions.map((item: any) => [
+            `${item.year}-${item.month}`,
+            {
+              year: item.year,
+              month: item.month,
+            },
+          ])
+        ).values()
+      ).sort((a, b) => {
+        if (a.year !== b.year) {
+          return a.year - b.year;
+        }
+
+        return a.month - b.month;
+      });
+
       setAvailablePeriods(periods);
     }
-  
+
     loadPeriods();
   }, [setAvailablePeriods]);
-
-  useEffect(() => {
-    async function initializeRecurring() {
-      try {
-        await syncRecurringTransactions();
-      } catch (error) {
-        console.error(
-          "[Recurring]",
-          error
-        );
-      }
-    }
-  
-    initializeRecurring();
-  }, []);
 
   if (isLoading) {
     return (
@@ -100,42 +84,41 @@ export default function DashboardPage() {
     );
   }
 
-  const husbandProgress =
-    data.incomes.total === 0
-      ? 0
-      : Math.round(
-        (data.incomes.husband / data.incomes.total) * 100
-      );
-
-  const wifeProgress =
-    data.incomes.total === 0
-      ? 0
-      : Math.round(
-        (data.incomes.wife / data.incomes.total) * 100
-      );
+  const currentMonthLabel = monthLabel();
 
   return (
     <>
       <main className="mx-auto w-full max-w-md space-y-6 px-5 pb-28 pt-6">
-
         <DashboardHeader />
 
         <MonthSelector />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div
+          className={`grid gap-4 ${
+            data.profiles.length === 1
+              ? "grid-cols-1"
+              : "grid-cols-2"
+          }`}
+        >
+          {data.profiles.map((profile) => {
+            const progress =
+              data.incomes.total === 0
+                ? 0
+                : Math.round(
+                    (profile.income /
+                      data.incomes.total) *
+                      100
+                  );
 
-          <IncomeCard
-            label="Penghasilan Suami"
-            amount={data.incomes.husband}
-            progress={husbandProgress}
-          />
-
-          <IncomeCard
-            label="Penghasilan Istri"
-            amount={data.incomes.wife}
-            progress={wifeProgress}
-          />
-
+            return (
+              <IncomeCard
+                key={profile.id}
+                label={`Penghasilan ${profile.name}`}
+                amount={profile.income}
+                progress={progress}
+              />
+            );
+          })}
         </div>
 
         <TotalIncomeCard
@@ -151,8 +134,14 @@ export default function DashboardPage() {
           amount={data.balance.total}
           percentage={data.balance.percentage}
         />
-        <RecentTransactions />
 
+        <FinancialInsight
+          monthLabel={currentMonthLabel}
+          totalIncome={data.incomes.total}
+          totalExpense={data.expenses.total}
+        />
+
+        <RecentTransactions />
       </main>
 
       <BottomNav items={navItems} />
