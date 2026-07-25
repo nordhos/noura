@@ -22,9 +22,10 @@ export default function QueryProvider({
   );
 
   useEffect(() => {
+
     checkAutoSalary().catch(console.error);
   }, []);
-
+  
   return (
     <QueryClientProvider client={queryClient}>
       {children}
