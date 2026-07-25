@@ -35,7 +35,6 @@ export async function checkAutoSalary(): Promise<void> {
   isCheckingAutoSalary = true;
 
   try {
-    console.log("AUTO SALARY START");
 
     const today = getTodayWIB();
 
