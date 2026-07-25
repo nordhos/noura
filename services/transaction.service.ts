@@ -184,3 +184,26 @@ export async function deleteTransaction(
     throw error;
   }
 }
+
+export async function hasAutoSalaryTransaction(
+  profileId: string,
+  year: number,
+  month: number
+): Promise<boolean> {
+  const { count, error } = await supabase
+    .from("transactions")
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
+    .eq("profile_id", profileId)
+    .eq("source", "auto_salary")
+    .eq("year", year)
+    .eq("month", month);
+
+  if (error) {
+    throw error;
+  }
+
+  return (count ?? 0) > 0;
+}

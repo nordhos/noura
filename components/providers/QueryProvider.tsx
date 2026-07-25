@@ -1,7 +1,8 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { checkAutoSalary } from "@/services/auto-salary.service";
 
 export default function QueryProvider({
   children,
@@ -19,6 +20,10 @@ export default function QueryProvider({
         },
       })
   );
+
+  useEffect(() => {
+    checkAutoSalary().catch(console.error);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

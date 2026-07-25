@@ -9,6 +9,7 @@ export interface TransactionCategory {
   type: TransactionCategoryType;
   name: string;
   is_default: boolean;
+  is_system: boolean;
   created_at: string;
 }
 
@@ -18,6 +19,28 @@ export async function getCategories(
   let query = supabase
     .from("transaction_categories")
     .select("*")
+    .order("name", { ascending: true });
+
+  if (type) {
+    query = query.eq("type", type);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
+export async function getVisibleCategories(
+  type?: TransactionCategoryType
+): Promise<TransactionCategory[]> {
+  let query = supabase
+    .from("transaction_categories")
+    .select("*")
+    .eq("is_system", false)
     .order("name", { ascending: true });
 
   if (type) {
