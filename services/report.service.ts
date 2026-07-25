@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase";
 
+export interface ProfileAmount {
+  profileId: string;
+  name: string;
+  amount: number;
+}
+
 export interface MonthlyCashFlow {
   month: number;
   label: string;
@@ -9,23 +15,25 @@ export interface MonthlyCashFlow {
 }
 
 export interface ReportSummary {
-  startingBalance: number;
+  lifetime: {
+    balance: number;
+  };
 
-  totalIncome: number;
+  annual: {
+    balance: number;
 
-  totalExpense: number;
+    income: {
+      total: number;
+      profiles: ProfileAmount[];
+    };
 
-  totalBalance: number;
-
-  totalTransaction: number;
-
-  netCashFlow: number;
+    expense: {
+      total: number;
+      profiles: ProfileAmount[];
+    };
+  };
 
   monthly: MonthlyCashFlow[];
-}
-
-interface AppSetting {
-  starting_balance: number | string;
 }
 
 interface Transaction {
@@ -51,35 +59,10 @@ const MONTHS = [
   "Des",
 ];
 
-export async function getReportSummary(): Promise<ReportSummary> {
-  // ======================================
-  // APP SETTING
-  // ======================================
-
-  const {
-    data: appSetting,
-    error: appSettingError,
-  } = await supabase
-    .from("app_setting")
-    .select("starting_balance")
-    .maybeSingle();
-
-  if (appSettingError) {
-    throw appSettingError;
-  }
-
-  const startingBalance = Number(
-    (appSetting as AppSetting | null)?.starting_balance ?? 0
-  );
-
-  // ======================================
-  // TRANSACTION DATA
-  // ======================================
-
-  const {
-    data: transactions,
-    error: transactionError,
-  } = await supabase
+export async function getReportSummary(
+  year: number
+): Promise<ReportSummary> {
+  const { data: transactions, error } = await supabase
     .from("transactions")
     .select(`
       profile_id,
@@ -88,57 +71,89 @@ export async function getReportSummary(): Promise<ReportSummary> {
       month,
       year
     `)
-    .order("year", {
-      ascending: true,
-    })
-    .order("month", {
-      ascending: true,
-    })
-    .order("created_at", {
-      ascending: true,
-    });
+    .order("year", { ascending: true })
+    .order("month", { ascending: true })
+    .order("created_at", { ascending: true });
 
-  if (transactionError) {
-    throw transactionError;
+  if (error) {
+    throw error;
   }
 
-  const list =
-    (transactions ?? []) as Transaction[];
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select(`
+      id,
+      name
+    `)
+    .order("created_at", { ascending: true });
 
-  // ======================================
-  // TRANSACTION SUMMARY
-  // ======================================
+  if (profileError) {
+    throw profileError;
+  }
 
-  let totalIncome = 0;
-  let totalExpense = 0;
+  const list = (transactions ?? []) as Transaction[];
 
-  const monthlyMap = new Map<
-    string,
-    MonthlyCashFlow
-  >();
+  // ============================
+  // Lifetime
+  // ============================
+
+  let lifetimeIncome = 0;
+  let lifetimeExpense = 0;
+
+  // ============================
+  // Annual
+  // ============================
+
+  let annualIncome = 0;
+  let annualExpense = 0;
+
+  const incomeProfileMap = new Map<string, number>();
+  const expenseProfileMap = new Map<string, number>();
+
+  const monthlyMap = new Map<number, MonthlyCashFlow>();
 
   for (const item of list) {
     const amount = Number(item.amount);
 
+    // Lifetime
     if (item.type === "income") {
-      totalIncome += amount;
+      lifetimeIncome += amount;
     } else {
-      totalExpense += amount;
+      lifetimeExpense += amount;
     }
 
-    const key = `${item.year}-${item.month}`;
+    // Annual
+    if (item.year !== year) {
+      continue;
+    }
 
-    if (!monthlyMap.has(key)) {
-      monthlyMap.set(key, {
+    if (item.type === "income") {
+      annualIncome += amount;
+
+      incomeProfileMap.set(
+        item.profile_id,
+        (incomeProfileMap.get(item.profile_id) ?? 0) + amount
+      );
+    } else {
+      annualExpense += amount;
+
+      expenseProfileMap.set(
+        item.profile_id,
+        (expenseProfileMap.get(item.profile_id) ?? 0) + amount
+      );
+    }
+
+    if (!monthlyMap.has(item.month)) {
+      monthlyMap.set(item.month, {
         month: item.month,
-        label: `${MONTHS[item.month - 1]} ${item.year}`,
+        label: MONTHS[item.month - 1],
         income: 0,
         expense: 0,
         balance: 0,
       });
     }
 
-    const current = monthlyMap.get(key)!;
+    const current = monthlyMap.get(item.month)!;
 
     if (item.type === "income") {
       current.income += amount;
@@ -151,33 +166,46 @@ export async function getReportSummary(): Promise<ReportSummary> {
       current.expense;
   }
 
-  // ======================================
-  // LIFETIME SUMMARY
-  // ======================================
+  const incomeProfiles = (profiles ?? []).map((profile) => ({
+    profileId: profile.id,
+    name: profile.name,
+    amount: incomeProfileMap.get(profile.id) ?? 0,
+  }));
 
-  const netCashFlow =
-    totalIncome -
-    totalExpense;
-
-  const totalBalance =
-    startingBalance +
-    netCashFlow;
+  const expenseProfiles = (profiles ?? []).map((profile) => ({
+    profileId: profile.id,
+    name: profile.name,
+    amount: expenseProfileMap.get(profile.id) ?? 0,
+  }));
 
   return {
-    startingBalance,
+    lifetime: {
+      balance:
+        lifetimeIncome -
+        lifetimeExpense,
+    },
 
-    totalIncome,
+    annual: {
+      balance:
+        annualIncome -
+        annualExpense,
 
-    totalExpense,
+      income: {
+        total: annualIncome,
+        profiles: incomeProfiles,
+      },
 
-    totalBalance,
-
-    totalTransaction: list.length,
-
-    netCashFlow,
+      expense: {
+        total: annualExpense,
+        profiles: expenseProfiles,
+      },
+    },
 
     monthly: Array.from(
       monthlyMap.values()
+    ).sort(
+      (a, b) =>
+        a.month - b.month
     ),
   };
 }

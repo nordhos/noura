@@ -6,21 +6,31 @@ import { ArrowLeft, FileDown } from "lucide-react";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-
+import { YearSelector } from "@/components/period/YearSelector";
 import { navItems } from "@/lib/mock-data";
 import { formatIDR } from "@/lib/format-currency";
 
-import { useReport } from "@/hooks/useReport";
+import { useState } from "react";
+import { useAnnualReport } from "@/hooks/useReport";
 
-import { FinancialInsight } from "@/components/report/FinancialInsight";
 import { CashFlowChart } from "@/components/report/CashFlowChart";
 
 export default function ReportPage() {
+
+    const currentYear = new Date().getFullYear();
+
+    const [selectedYear, setSelectedYear] = useState(currentYear);
+
+    const years = Array.from(
+        { length: 9 },
+        (_, index) => 2026 + index
+    );
+
     const {
         data,
         isLoading,
         error,
-    } = useReport();
+    } = useAnnualReport(selectedYear);
 
     if (isLoading) {
         return (
@@ -61,18 +71,19 @@ export default function ReportPage() {
 
                     <div>
 
-                        <p className="text-xs uppercase tracking-[0.25em] text-accent">
-                            NOURA
-                        </p>
-
                         <h1 className="mt-1 text-3xl font-bold">
                             Laporan
                         </h1>
 
-                        <p className="mt-1 text-sm text-zinc-400">
-                            Ringkasan laporan keuanganmu sejak pertama menggunakan NOURA.
+                        <p className="mt-2 text-sm text-zinc-400">
+                            Ringkasan laporan lifetime dan yearly.
                         </p>
 
+                        <YearSelector
+                            year={selectedYear}
+                            years={years}
+                            onChange={setSelectedYear}
+                        />
                     </div>
 
                 </div>
@@ -83,16 +94,16 @@ export default function ReportPage() {
 
                     <Card className="overflow-hidden border border-accent/30 bg-gradient-to-br from-[#1b140c] via-[#171514] to-card">
 
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-center justify-between">
 
                             <div>
 
                                 <p className="text-sm text-zinc-400">
-                                Total Saldo Akumulatif
+                                    Saldo Berjalan (Lifetime)
                                 </p>
 
-                                <h2 className="mt-3 text-4xl font-bold text-white">
-                                    {formatIDR(data.totalBalance)}
+                                <h2 className="mt-3 text-3xl font-bold text-emerald-400">
+                                    {formatIDR(data.lifetime.balance)}
                                 </h2>
 
                                 <p className="mt-3 text-sm text-accent">
@@ -101,18 +112,47 @@ export default function ReportPage() {
 
                             </div>
 
-                            <div className="rounded-2xl bg-accent/15 p-4 text-3xl">
-                                💰
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 text-1xl">
+
+                                💸
+
                             </div>
 
                         </div>
 
                     </Card>
 
-                    <FinancialInsight
-                        totalIncome={data.totalIncome}
-                        totalExpense={data.totalExpense}
-                    />
+                    <Card>
+
+                        <div className="flex items-center justify-between">
+
+                            <div>
+
+                                <p className="text-sm text-zinc-400">
+                                    Saldo Bersih (Yearly)
+                                </p>
+
+                                <h2 className="mt-2 text-3xl font-bold text-accent">
+
+                                    {formatIDR(data.annual.balance)}
+
+                                </h2>
+
+                                <p className="mt-2 text-sm text-zinc-500">
+                                    Tahun {selectedYear}
+                                </p>
+
+                            </div>
+
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 text-1xl">
+
+                                💰
+
+                            </div>
+
+                        </div>
+
+                    </Card>
 
                     {/* TOTAL PENGHASILAN */}
 
@@ -123,18 +163,45 @@ export default function ReportPage() {
                             <div>
 
                                 <p className="text-sm text-zinc-400">
-                                    Total Penghasilan
+                                    Total Pemasukan (Yearly)
                                 </p>
 
-                                <h2 className="mt-2 text-3xl font-bold text-emerald-400">
-                                    {formatIDR(data.totalIncome)}
+                                <h2 className="mt-2 text-2xl font-bold text-white-400">
+                                    {formatIDR(data.annual.income.total)}
                                 </h2>
+
+                                <div className="mt-5 border-t border-border pt-4 space-y-3">
+
+                                    {data.annual.income.profiles.map((profile) => (
+
+                                        <div
+                                            key={profile.profileId}
+                                            className="flex items-center justify-between"
+                                        >
+
+                                            <span className="text-sm text-zinc-500">
+                                                {profile.name}
+                                            </span>
+
+                                            <span className="font-medium">
+                                                {formatIDR(profile.amount)}
+                                            </span>
+
+                                        </div>
+
+                                    ))}
+
+                                </div>
+
+                                <p className="mt-2 text-sm text-zinc-500">
+                                    Tahun {selectedYear}
+                                </p>
 
                             </div>
 
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-3xl">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-1xl">
 
-                                💵
+                                💼
 
                             </div>
 
@@ -151,18 +218,45 @@ export default function ReportPage() {
                             <div>
 
                                 <p className="text-sm text-zinc-400">
-                                    Total Pengeluaran
+                                    Total Pengeluaran (Yearly)
                                 </p>
 
-                                <h2 className="mt-2 text-3xl font-bold text-red-400">
-                                    {formatIDR(data.totalExpense)}
+                                <h2 className="mt-2 text-2xl font-bold text-red-400">
+                                    {formatIDR(data.annual.expense.total)}
                                 </h2>
+
+                                <div className="mt-5 border-t border-border pt-4 space-y-3">
+
+                                    {data.annual.expense.profiles.map((profile) => (
+
+                                        <div
+                                            key={profile.profileId}
+                                            className="flex items-center justify-between"
+                                        >
+
+                                            <span className="text-sm text-zinc-500">
+                                                {profile.name}
+                                            </span>
+
+                                            <span className="font-medium">
+                                                {formatIDR(profile.amount)}
+                                            </span>
+
+                                        </div>
+
+                                    ))}
+
+                                </div>
+
+                                <p className="mt-2 text-sm text-zinc-500">
+                                    Tahun {selectedYear}
+                                </p>
 
                             </div>
 
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/15 text-3xl">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-red-500/15 text-1xl">
 
-                                💸
+                                🛍️
 
                             </div>
 
@@ -170,33 +264,6 @@ export default function ReportPage() {
 
                     </Card>
 
-                    {/* TOTAL TRANSAKSI */}
-
-                    <Card>
-
-                        <div className="flex items-center justify-between">
-
-                            <div>
-
-                                <p className="text-sm text-zinc-400">
-                                    Total Transaksi
-                                </p>
-
-                                <h2 className="mt-2 text-3xl font-bold">
-                                    {data.totalTransaction}
-                                </h2>
-
-                            </div>
-
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-3xl">
-
-                                🧾
-
-                            </div>
-
-                        </div>
-
-                    </Card>
 
                     <Card className="mt-2">
 
@@ -214,7 +281,7 @@ export default function ReportPage() {
 
                             </div>
 
-                            <div className="rounded-2xl bg-accent/15 px-3 py-2 text-lg">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 px-3 py-2 text-lg">
 
                                 📈
 
