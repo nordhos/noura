@@ -9,10 +9,7 @@ import {
   User,
 } from "lucide-react";
 
-import type {
-  QuickAction,
-  NavItem,
-} from "./types";
+import type { NavItem } from "./types";
 
 /**
  * NOTE on the numbers below:

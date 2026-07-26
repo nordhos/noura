@@ -2,7 +2,6 @@
 
 import { downloadTransactionReport } from "@/lib/pdf/downloadTransactionReport";
 import { useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/ui/BackButton";
 
@@ -18,10 +17,8 @@ import { useDashboard } from "@/hooks/useDashboard";
 export default function TransactionPage() {
   const router = useRouter();
 
-  const {
-    selectedMonth,
-    selectedYear,
-  } = useFinanceStore();
+  const { selectedMonth, selectedYear } =
+    useFinanceStore();
 
   const {
     data = [],
@@ -34,19 +31,16 @@ export default function TransactionPage() {
   const { data: dashboard } =
     useDashboard();
 
-
-  const periodLabel = new Intl.DateTimeFormat(
-    "id-ID",
-    {
+  const periodLabel =
+    new Intl.DateTimeFormat("id-ID", {
       month: "long",
       year: "numeric",
-    }
-  ).format(
-    new Date(
-      selectedYear,
-      selectedMonth - 1
-    )
-  );
+    }).format(
+      new Date(
+        selectedYear,
+        selectedMonth - 1
+      )
+    );
 
   const totalIncome =
     dashboard?.incomes.total ?? 0;
@@ -57,35 +51,32 @@ export default function TransactionPage() {
   const balance =
     dashboard?.balance.total ?? 0;
 
-  const startingBalance = 0;
+  const pdfTransactions = data.map(
+    (item) => ({
+      id: item.id,
 
-  const transactionCount =
-    data.length;
+      date: new Date(
+        item.transaction_date
+      ).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+      }),
 
-  const pdfTransactions = data.map((item) => ({
-    id: item.id,
+      profile:
+        item.profiles?.name ?? "-",
 
-    date: new Date(
-      item.transaction_date
-    ).toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "short",
-    }),
+      category:
+        item.transaction_categories
+          ?.name ?? "-",
 
-    profile:
-      item.profiles?.name ?? "-",
+      description:
+        item.description ?? "-",
 
-    category:
-      item.transaction_categories?.name ??
-      "-",
+      type: item.type,
 
-    description:
-      item.description ?? "-",
-
-    type: item.type,
-
-    amount: Number(item.amount),
-  }));
+      amount: Number(item.amount),
+    })
+  );
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -95,16 +86,12 @@ export default function TransactionPage() {
 
   return (
     <>
-      <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-28">
-
+      <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
         <div className="mb-6 flex items-center justify-between">
-
           <div className="flex items-center gap-3">
-
             <BackButton href="/dashboard" />
 
             <div>
-
               <h1 className="text-2xl font-bold">
                 Riwayat Transaksi
               </h1>
@@ -112,9 +99,7 @@ export default function TransactionPage() {
               <p className="text-sm text-zinc-400">
                 {periodLabel}
               </p>
-
             </div>
-
           </div>
 
           <button
@@ -122,51 +107,47 @@ export default function TransactionPage() {
             onClick={() =>
               downloadTransactionReport({
                 period: periodLabel,
-                startingBalance,
                 totalIncome,
                 totalExpense,
                 balance,
-                transactionCount,
-                transactions: pdfTransactions,
+                transactions:
+                  pdfTransactions,
               })
             }
             className="
-    rounded-xl
-    border
-    border-border
-    px-3
-    py-2
-    text-sm
-    font-medium
-    transition
-    hover:bg-white/5
-  "
+              rounded-xl
+              border
+              border-border
+              px-3
+              py-2
+              text-sm
+              font-medium
+              transition
+              hover:bg-white/5
+            "
           >
             ⬇ PDF
           </button>
-
         </div>
 
-        {isLoading && (
-          <p>Loading...</p>
-        )}
+        {isLoading && <p>Loading...</p>}
 
-        {!isLoading && data.length === 0 && (
-          <p className="text-zinc-400">
-            Belum ada transaksi.
-          </p>
-        )}
+        {!isLoading &&
+          data.length === 0 && (
+            <p className="text-zinc-400">
+              Belum ada transaksi.
+            </p>
+          )}
 
         <div className="divide-y divide-border rounded-2xl border border-border bg-card px-4">
-
           {data.map((item) => (
             <TransactionItem
-              id={item.id}
               key={item.id}
+              id={item.id}
               type={item.type}
               category={
-                item.transaction_categories?.name ??
-                "-"
+                item.transaction_categories
+                  ?.name ?? "-"
               }
               profile={
                 item.profiles?.name ??
@@ -181,9 +162,7 @@ export default function TransactionPage() {
               })}
             />
           ))}
-
         </div>
-
       </main>
 
       <BottomNav items={navItems} />

@@ -46,7 +46,7 @@ export default function DashboardPage() {
 
       const periods = Array.from(
         new Map(
-          transactions.map((item: any) => [
+          transactions.map((item) => [
             `${item.year}-${item.month}`,
             {
               year: item.year,

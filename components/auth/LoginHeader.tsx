@@ -1,10 +1,6 @@
 import { Logomark } from '@/components/ui/Logomark';
 
-interface LoginHeaderProps {
-  userName: string;
-}
-
-export function LoginHeader({ userName }: LoginHeaderProps) {
+export function LoginHeader() {
   return (
     <div className="flex flex-col items-center text-center">
       <p className="mb-3 max-w-[16rem] text-base text-ink-muted">

@@ -1,19 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, FileDown } from "lucide-react";
-
+import { Download } from "lucide-react";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { YearSelector } from "@/components/period/YearSelector";
 import { navItems } from "@/lib/mock-data";
 import { formatIDR } from "@/lib/format-currency";
-
 import { useState } from "react";
 import { useAnnualReport } from "@/hooks/useReport";
-
 import { CashFlowChart } from "@/components/report/CashFlowChart";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { AnnualReport } from "@/components/report/AnnualReport";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ReportPage() {
 
@@ -31,6 +30,14 @@ export default function ReportPage() {
         isLoading,
         error,
     } = useAnnualReport(selectedYear);
+
+    const monthlyPdfData =
+    data?.monthly.map((item) => ({
+        month: String(item.month),
+        income: item.income,
+        expense: item.expense,
+        balance: item.income - item.expense,
+    })) ?? [];
 
     if (isLoading) {
         return (
@@ -62,12 +69,7 @@ export default function ReportPage() {
 
                 <div className="mb-10 flex items-center gap-3">
 
-                    <Link
-                        href="/dashboard"
-                        className="rounded-2xl border border-border bg-card p-3 transition hover:border-accent"
-                    >
-                        <ArrowLeft size={18} />
-                    </Link>
+                <BackButton href="/dashboard" />
 
                     <div>
 
@@ -106,7 +108,7 @@ export default function ReportPage() {
                                     {formatIDR(data.lifetime.balance)}
                                 </h2>
 
-                                <p className="mt-3 text-sm text-accent">
+                                <p className="mt-2 text-sm text-zinc-500">
                                     Sejak pertama menggunakan NOURA
                                 </p>
 
@@ -319,17 +321,37 @@ export default function ReportPage() {
 
                     </Card>
 
-                    <Button
-                        type="button"
-                        disabled
-                        className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl"
+                    <PDFDownloadLink
+                        document={
+                            <AnnualReport
+                                year={selectedYear}
+                                lifetimeBalance={data.lifetime.balance}
+                                annualBalance={data.annual.balance}
+                                totalIncome={data.annual.income.total}
+                                totalExpense={data.annual.expense.total}
+                                incomeProfiles={data.annual.income.profiles}
+                                expenseProfiles={data.annual.expense.profiles}
+                                monthly={monthlyPdfData}
+                            />
+                        }
+                        fileName={`NOURA_Laporan_${selectedYear}.pdf`}
+                        className="w-full"
                     >
-                        <FileDown size={20} />
+                        {({ loading }) => (
+                            <Button
+                                type="button"
+                                className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl"
+                            >
+                                <Download size={20} />
 
-                        <span className="font-medium">
-                            Segera hadir
-                        </span>
-                    </Button>
+                                <span className="font-medium">
+                                    {loading
+                                        ? "Menyiapkan PDF..."
+                                        : "Download PDF"}
+                                </span>
+                            </Button>
+                        )}
+                    </PDFDownloadLink>
 
                 </div>
 
