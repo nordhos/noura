@@ -19,7 +19,9 @@ async function getVisibleCategories(
     .select("*")
     .eq("type", type)
     .eq("is_system", false)
-    .order("name", { ascending: true });
+    .order("sort_order", {
+      ascending: true,
+    })
 
   if (error) {
     throw error;
