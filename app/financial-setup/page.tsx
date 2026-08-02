@@ -13,6 +13,8 @@ import {
 
 import { getAppSetting } from "@/services/app-settings.service";
 import { createFinancialSystem } from "@/services/financial-system.service";
+import { savePin } from "@/services/pin.service";
+import { login } from "@/hooks/useAuth";
 
 type Step = 1 | 2 | 3;
 
@@ -39,15 +41,23 @@ export default function FinancialSetupPage() {
   const [partnerBalance, setPartnerBalance] =
     useState("");
 
+  // ============================
+  // PIN
+  // ============================
+
+  const [pin, setPin] = useState("");
+
+  const [confirmPin, setConfirmPin] =
+    useState("");
+
   useEffect(() => {
     async function checkSetup() {
       try {
         const appSetting =
           await getAppSetting();
 
-        if (
-          appSetting?.onboarding_completed
-        ) {
+        if (appSetting?.onboarding_completed) {
+          login();
           router.replace("/dashboard");
           return;
         }
@@ -88,6 +98,17 @@ export default function FinancialSetupPage() {
     hasPartner,
   ]);
 
+  const isPinValid = useMemo(() => {
+    return /^\d{6}$/.test(pin);
+  }, [pin]);
+
+  const isConfirmPinValid = useMemo(() => {
+    return (
+      pin.length === 6 &&
+      pin === confirmPin
+    );
+  }, [pin, confirmPin]);
+
   const canSubmit = useMemo(() => {
     if (primaryBalance === "") {
       return false;
@@ -100,11 +121,21 @@ export default function FinancialSetupPage() {
       return false;
     }
 
+    if (!isPinValid) {
+      return false;
+    }
+
+    if (!isConfirmPinValid) {
+      return false;
+    }
+
     return true;
   }, [
     primaryBalance,
     partnerBalance,
     hasPartner,
+    isPinValid,
+    isConfirmPinValid,
   ]);
 
   function handleNext() {
@@ -154,263 +185,352 @@ export default function FinancialSetupPage() {
         });
       }
 
+      // =====================================
+      // Create Financial System
+      // =====================================
+
       await createFinancialSystem({
         profiles,
       });
 
-      toast.success(
-        "Selamat datang di NOURA!"
-      );
+      // =====================================
+      // Save PIN
+      // =====================================
+      console.log("[SETUP] saving pin =", pin);
+      await savePin(pin);
+
+      console.log("[SETUP] pin saved");
+
+      /* Auto Login */
+      login();
+
+      toast.success("Financial system berhasil dibuat.");
 
       router.replace("/dashboard");
     } catch (error) {
       console.error(error);
 
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Terjadi kesalahan."
-      );
-  } finally {
-    setLoading(false);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error(JSON.stringify(error));
+      }
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-if (checking) {
+  if (checking) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-zinc-500">
+          Memuat...
+        </p>
+      </main>
+    );
+  }
+
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-zinc-500">
-        Memuat...
-      </p>
-    </main>
-  );
-}
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
+      {step === 1 && (
+        <>
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <Image
+              src="/images/nouraopening.png"
+              alt="NOURA"
+              width={320}
+              height={320}
+              priority
+              className="mb-12"
+            />
 
-return (
-  <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
-
-    {step === 1 && (
-      <>
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <Image
-            src="/images/nouraopening.png"
-            alt="NOURA"
-            width={320}
-            height={320}
-            priority
-            className="mb-12"
-          />
-
-          <h1 className="text-center text-3xl font-bold leading-tight">
-            Selamat Datang di
-            <br />
-            NOURA
-          </h1>
-
-          <p className="mt-6 text-center text-base text-zinc-400">
-            Mari siapkan sistem keuangan Anda.
-          </p>
-        </div>
-
-        <Button onClick={handleNext}>
-          Mulai
-        </Button>
-      </>
-    )}
-
-    {step === 2 && (
-      <>
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold">
-              Siapa nama Anda?
+            <h1 className="text-center text-3xl font-bold leading-tight">
+              Selamat Datang di
+              <br />
+              NOURA
             </h1>
 
-            <p className="text-zinc-400">
-              Informasi ini akan digunakan untuk
-              mencatat transaksi keuangan Anda.
+            <p className="mt-6 text-center text-base text-zinc-400">
+              Mari siapkan sistem keuangan Anda.
             </p>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm text-zinc-400">
-              Nama Anda
-            </label>
+          <Button onClick={handleNext}>
+            Mulai
+          </Button>
+        </>
+      )}
 
-            <input
-              type="text"
-              value={primaryName}
-              placeholder="Masukkan nama"
-              onChange={(e) =>
-                setPrimaryName(e.target.value)
-              }
-              className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
-            />
-          </div>
+      {step === 2 && (
+        <>
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold">
+                Siapa nama Anda?
+              </h1>
 
-          <div className="space-y-3">
-            <label className="text-sm text-zinc-400">
-              Apakah Anda ingin menambahkan partner?
-            </label>
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant={
-                  !hasPartner
-                    ? "primary"
-                    : "secondary"
-                }
-                onClick={() =>
-                  setHasPartner(false)
-                }
-                className="flex-1"
-              >
-                Tidak
-              </Button>
-
-              <Button
-                type="button"
-                variant={
-                  hasPartner
-                    ? "primary"
-                    : "secondary"
-                }
-                onClick={() =>
-                  setHasPartner(true)
-                }
-                className="flex-1"
-              >
-                Ya
-              </Button>
+              <p className="text-zinc-400">
+                Informasi ini akan digunakan untuk
+                mencatat transaksi keuangan Anda.
+              </p>
             </div>
-          </div>
 
-          {hasPartner && (
             <div className="space-y-2">
               <label className="text-sm text-zinc-400">
-                Nama Partner
+                Nama Anda
               </label>
 
               <input
                 type="text"
-                value={partnerName}
-                placeholder="Masukkan nama partner"
+                value={primaryName}
+                placeholder="Masukkan nama"
                 onChange={(e) =>
-                  setPartnerName(
-                    e.target.value
-                  )
+                  setPrimaryName(e.target.value)
                 }
                 className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
               />
             </div>
-          )}
-        </div>
 
-        <div className="mt-auto flex gap-3 pt-10">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleBack}
-            className="flex-1"
-          >
-            Kembali
-          </Button>
+            <div className="space-y-3">
+              <label className="text-sm text-zinc-400">
+                Apakah Anda ingin menambahkan partner?
+              </label>
 
-          <Button
-            type="button"
-            onClick={handleNext}
-            disabled={!canContinueProfile}
-            className="flex-1"
-          >
-            Lanjut
-          </Button>
-        </div>
-      </>
-    )}
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant={
+                    !hasPartner
+                      ? "primary"
+                      : "secondary"
+                  }
+                  onClick={() =>
+                    setHasPartner(false)
+                  }
+                  className="flex-1"
+                >
+                  Tidak
+                </Button>
 
-    {step === 3 && (
-      <>
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold">
-              Berapa saldo yang Anda miliki saat ini?
-            </h1>
+                <Button
+                  type="button"
+                  variant={
+                    hasPartner
+                      ? "primary"
+                      : "secondary"
+                  }
+                  onClick={() =>
+                    setHasPartner(true)
+                  }
+                  className="flex-1"
+                >
+                  Ya
+                </Button>
+              </div>
+            </div>
 
-            <p className="text-zinc-400">
-              Saldo ini akan menjadi titik awal pencatatan keuangan Anda di NOURA.
-            </p>
+            {hasPartner && (
+              <div className="space-y-2">
+                <label className="text-sm text-zinc-400">
+                  Nama Partner
+                </label>
+
+                <input
+                  type="text"
+                  value={partnerName}
+                  placeholder="Masukkan nama partner"
+                  onChange={(e) =>
+                    setPartnerName(
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
+                />
+              </div>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm text-zinc-400">
-              {primaryName}
-            </label>
+          <div className="mt-auto flex gap-3 pt-10">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleBack}
+              className="flex-1"
+            >
+              Kembali
+            </Button>
 
-            <input
-              type="text"
-              inputMode="numeric"
-              value={primaryBalance}
-              placeholder="Rp0"
-              onChange={(e) =>
-                setPrimaryBalance(
-                  formatIDRInput(e.target.value)
-                )
-              }
-              className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
-            />
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={!canContinueProfile}
+              className="flex-1"
+            >
+              Lanjut
+            </Button>
           </div>
+        </>
+      )}
+      {step === 3 && (
+        <>
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold">
+                Berapa saldo yang Anda miliki saat ini?
+              </h1>
 
-          {hasPartner && (
+              <p className="text-zinc-400">
+                Saldo ini akan menjadi titik awal
+                pencatatan keuangan Anda di NOURA.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm text-zinc-400">
-                {partnerName}
+                {primaryName}
               </label>
 
               <input
                 type="text"
                 inputMode="numeric"
-                value={partnerBalance}
+                value={primaryBalance}
                 placeholder="Rp0"
                 onChange={(e) =>
-                  setPartnerBalance(
+                  setPrimaryBalance(
                     formatIDRInput(e.target.value)
                   )
                 }
                 className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
               />
             </div>
-          )}
 
-          <div className="rounded-2xl bg-zinc-900 p-4 text-sm text-zinc-400">
-            Agar pencatatan presisi, isi nilai sesuai saldo yang kamu miliki.
+            {hasPartner && (
+              <div className="space-y-2">
+                <label className="text-sm text-zinc-400">
+                  {partnerName}
+                </label>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={partnerBalance}
+                  placeholder="Rp0"
+                  onChange={(e) =>
+                    setPartnerBalance(
+                      formatIDRInput(e.target.value)
+                    )
+                  }
+                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3"
+                />
+              </div>
+            )}
+
+            <div className="rounded-2xl bg-zinc-900 p-4 text-sm text-zinc-400">
+              Agar pencatatan presisi, isi nilai
+              sesuai saldo yang Anda miliki saat
+              ini.
+            </div>
+
+            {/* ========================= */}
+            {/* SECURITY */}
+            {/* ========================= */}
+
+            <div className="space-y-2 pt-4">
+              <h2 className="text-2xl font-semibold">
+                PIN untuk NOURA
+              </h2>
+
+              <p className="text-zinc-400">
+                Buat PIN 6 digit untuk membuka NOURA.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-zinc-400">
+                PIN
+              </label>
+
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={pin}
+                placeholder="••••••"
+                onChange={(e) =>
+                  setPin(
+                    e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 6)
+                  )
+                }
+                className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 tracking-[0.5em]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm text-zinc-400">
+                Konfirmasi PIN
+              </label>
+
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={confirmPin}
+                placeholder="••••••"
+                onChange={(e) =>
+                  setConfirmPin(
+                    e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 6)
+                  )
+                }
+                className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 tracking-[0.5em]"
+              />
+            </div>
+
+            <div className="rounded-2xl bg-zinc-900 p-4 text-sm text-zinc-400 space-y-2">
+              <p>
+                • PIN harus terdiri dari
+                6 digit angka.
+              </p>
+
+              <p>
+                • PIN dan konfirmasi harus
+                sama.
+              </p>
+
+              <p>
+                • Hindari kombinasi yang mudah
+                ditebak seperti 111111,
+                123456, atau tanggal lahir.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-auto flex gap-3 pt-10">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleBack}
-            className="flex-1"
-          >
-            Kembali
-          </Button>
+          <div className="mt-auto flex gap-3 pt-10">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleBack}
+              className="flex-1"
+            >
+              Kembali
+            </Button>
 
-          <Button
-            type="button"
-            disabled={!canSubmit || loading}
-            onClick={handleSubmit}
-            className="flex-1"
-          >
-            {loading
-              ? "Menyiapkan..."
-              : "Mulai"}
-          </Button>
-        </div>
-      </>
-    )}
-
-  </main>
-);
+            <Button
+              type="button"
+              disabled={!canSubmit || loading}
+              onClick={handleSubmit}
+              className="flex-1"
+            >
+              {loading
+                ? "Menyimpan..."
+                : "Simpan & Masuk"}
+            </Button>
+          </div>
+        </>
+      )}
+    </main>
+  );
 }

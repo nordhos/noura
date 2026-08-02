@@ -6,9 +6,9 @@ import { LoginHeader } from "./LoginHeader";
 import { PinDots } from "./PinDots";
 import { Keypad } from "./Keypad";
 import { usePinInput } from "./use-pin-input";
-import { checkPin } from "@/lib/mock-user";
 import { login } from "@/hooks/useAuth";
 import { getAppSetting } from "@/services/app-settings.service";
+import { getStoredPin } from "@/services/pin.service";
 
 const PIN_LENGTH = 6;
 
@@ -21,7 +21,11 @@ export function LoginScreen() {
     async (pin: string) => {
       setStatus("checking");
 
-      const ok = await checkPin(pin);
+      const storedPin = await getStoredPin();
+
+      const ok =
+        storedPin !== null &&
+        storedPin === pin;
 
       if (ok) {
         login();
