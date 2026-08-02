@@ -335,7 +335,7 @@ export default function ReportPage() {
                             />
                         }
                         fileName={`NOURA_Laporan_${selectedYear}.pdf`}
-                        className="w-full"
+                        className="mt-5 w-full"
                     >
                         {({ loading }) => (
                             <Button
