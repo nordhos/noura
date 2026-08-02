@@ -196,10 +196,7 @@ export default function FinancialSetupPage() {
       // =====================================
       // Save PIN
       // =====================================
-      console.log("[SETUP] saving pin =", pin);
       await savePin(pin);
-
-      console.log("[SETUP] pin saved");
 
       /* Auto Login */
       login();

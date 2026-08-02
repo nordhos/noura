@@ -6,9 +6,6 @@ export async function savePin(pin: string) {
         .select("id")
         .maybeSingle();
 
-    console.log("[PIN] appSetting =", data);
-    console.log("[PIN] error =", error);
-
     if (error) {
         throw error;
     }
@@ -27,13 +24,9 @@ export async function savePin(pin: string) {
         })
         .eq("id", data.id);
 
-    console.log("[PIN] updateError =", updateError);
-
     if (updateError) {
         throw updateError;
     }
-
-    console.log("[PIN] saved");
 }
 
 export async function getStoredPin(): Promise<string | null> {
@@ -47,5 +40,4 @@ export async function getStoredPin(): Promise<string | null> {
     }
 
     return data?.pin_hash ?? null;
-    console.log("[PIN] saved");
 }
