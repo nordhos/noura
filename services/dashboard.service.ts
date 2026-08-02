@@ -1,10 +1,15 @@
 import { supabase } from "@/lib/supabase";
 
+export interface DashboardProfileIncome {
+  id: string;
+  name: string;
+  income: number;
+}
+
 export interface DashboardSummary {
+  profiles: DashboardProfileIncome[];
 
   incomes: {
-    husband: number;
-    wife: number;
     total: number;
   };
 
@@ -21,7 +26,7 @@ export interface DashboardSummary {
 
 interface Profile {
   id: string;
-  role: "husband" | "wife";
+  name: string;
 }
 
 interface Transaction {
@@ -34,32 +39,28 @@ export async function getDashboardSummary(
   year: number,
   month: number
 ): Promise<DashboardSummary> {
-  const {
-    data: profiles,
-    error: profileError,
-  } = await supabase
-    .from("profiles")
-    .select("id, role");
+
+  const { data: profiles, error: profileError } =
+    await supabase
+      .from("profiles")
+      .select("id,name")
+      .order("created_at", {
+        ascending: true,
+      });
 
   if (profileError) {
-    console.error("PROFILE ERROR:", profileError);
     throw profileError;
   }
 
-  const profileList =
-    (profiles ?? []) as Profile[];
+  const profileList = (profiles ?? []) as Profile[];
 
-  const husband =
-    profileList.find(
-      (profile) =>
-        profile.role === "husband"
-    );
+  const startDate = new Date(year, month - 1, 1)
+    .toISOString()
+    .split("T")[0];
 
-  const wife =
-    profileList.find(
-      (profile) =>
-        profile.role === "wife"
-    );
+  const endDate = new Date(year, month, 0)
+    .toISOString()
+    .split("T")[0];
 
   const {
     data: transactions,
@@ -69,78 +70,63 @@ export async function getDashboardSummary(
     .select(`
       profile_id,
       amount,
-      type
+      type,
+      transaction_date
     `)
-    .eq("year", year)
-    .eq("month", month);
+    .gte("transaction_date", startDate)
+    .lte("transaction_date", endDate);
 
   if (transactionError) {
-    console.error("TRANSACTION ERROR:", transactionError);
     throw transactionError;
   }
 
   const transactionList =
     (transactions ?? []) as Transaction[];
 
-  const husbandIncome =
-    transactionList
-      .filter(
-        (transaction) =>
-          transaction.type ===
-          "income" &&
-          transaction.profile_id ===
-          husband?.id
-      )
-      .reduce(
-        (total, transaction) =>
-          total +
-          Number(transaction.amount),
-        0
-      );
+  const profilesIncome =
+    profileList.map((profile) => {
+      const income = transactionList
+        .filter(
+          (transaction) =>
+            transaction.type === "income" &&
+            transaction.profile_id === profile.id
+        )
+        .reduce(
+          (total, transaction) =>
+            total + Number(transaction.amount),
+          0
+        );
 
-  const wifeIncome =
-    transactionList
-      .filter(
-        (transaction) =>
-          transaction.type ===
-          "income" &&
-          transaction.profile_id ===
-          wife?.id
-      )
-      .reduce(
-        (total, transaction) =>
-          total +
-          Number(transaction.amount),
-        0
-      );
+      return {
+        id: profile.id,
+        name: profile.name,
+        income,
+      };
+    });
 
-  const totalExpense =
-    transactionList
-      .filter(
-        (transaction) =>
-          transaction.type ===
-          "expense"
-      )
-      .reduce(
-        (total, transaction) =>
-          total +
-          Number(transaction.amount),
-        0
-      );
+  const totalIncome = profilesIncome.reduce(
+    (total, profile) => total + profile.income,
+    0
+  );
 
-  const totalIncome =
-    husbandIncome +
-    wifeIncome;
+  const totalExpense = transactionList
+    .filter(
+      (transaction) =>
+        transaction.type === "expense"
+    )
+    .reduce(
+      (total, transaction) =>
+        total + Number(transaction.amount),
+      0
+    );
 
-  const monthlyBalance =
-    totalIncome -
-    totalExpense;
+  const balance =
+    totalIncome - totalExpense;
 
   return {
+    profiles: profilesIncome,
 
     incomes: {
-      husband: husbandIncome,
-      wife: wifeIncome,
       total: totalIncome,
     },
 
@@ -150,19 +136,18 @@ export async function getDashboardSummary(
         totalIncome === 0
           ? 0
           : Math.round(
-            (totalExpense / totalIncome) *
-            100
+            (totalExpense / totalIncome) * 100
           ),
     },
 
     balance: {
-      total: monthlyBalance,
+      total: balance,
       percentage:
         totalIncome === 0
           ? 0
           : Math.round(
-            (monthlyBalance / totalIncome) * 100
+            (balance / totalIncome) * 100
           ),
-    }
+    },
   };
 }

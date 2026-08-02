@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase";
 
+export interface ProfileAmount {
+  profileId: string;
+  name: string;
+  amount: number;
+}
+
 export interface MonthlyCashFlow {
   month: number;
   label: string;
@@ -9,17 +15,23 @@ export interface MonthlyCashFlow {
 }
 
 export interface ReportSummary {
-  startingBalance: number;
+  lifetime: {
+    balance: number;
+  };
 
-  totalIncome: number;
+  annual: {
+    balance: number;
 
-  totalExpense: number;
+    income: {
+      total: number;
+      profiles: ProfileAmount[];
+    };
 
-  totalBalance: number;
-
-  totalTransaction: number;
-
-  netCashFlow: number;
+    expense: {
+      total: number;
+      profiles: ProfileAmount[];
+    };
+  };
 
   monthly: MonthlyCashFlow[];
 }
@@ -47,16 +59,10 @@ const MONTHS = [
   "Des",
 ];
 
-export async function getReportSummary(): Promise<ReportSummary> {
-
-  // ======================================
-  // TRANSACTION DATA
-  // ======================================
-
-  const {
-    data: transactions,
-    error: transactionError,
-  } = await supabase
+export async function getReportSummary(
+  year: number
+): Promise<ReportSummary> {
+  const { data: transactions, error } = await supabase
     .from("transactions")
     .select(`
       profile_id,
@@ -65,60 +71,89 @@ export async function getReportSummary(): Promise<ReportSummary> {
       month,
       year
     `)
-    .order("year", {
-      ascending: true,
-    })
-    .order("month", {
-      ascending: true,
-    })
-    .order("created_at", {
-      ascending: true,
-    });
+    .order("year", { ascending: true })
+    .order("month", { ascending: true })
+    .order("created_at", { ascending: true });
 
-  if (transactionError)
-    throw transactionError;
+  if (error) {
+    throw error;
+  }
 
-  const list =
-    (transactions ?? []) as Transaction[];
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select(`
+      id,
+      name
+    `)
+    .order("created_at", { ascending: true });
 
-  // ======================================
-  // TRANSACTION SUMMARY
-  // ======================================
+  if (profileError) {
+    throw profileError;
+  }
 
-  let totalIncome = 0;
+  const list = (transactions ?? []) as Transaction[];
 
-  let totalExpense = 0;
+  // ============================
+  // Lifetime
+  // ============================
 
-  const monthlyMap = new Map<
-    string,
-    MonthlyCashFlow
-  >();
+  let lifetimeIncome = 0;
+  let lifetimeExpense = 0;
+
+  // ============================
+  // Annual
+  // ============================
+
+  let annualIncome = 0;
+  let annualExpense = 0;
+
+  const incomeProfileMap = new Map<string, number>();
+  const expenseProfileMap = new Map<string, number>();
+
+  const monthlyMap = new Map<number, MonthlyCashFlow>();
 
   for (const item of list) {
     const amount = Number(item.amount);
 
+    // Lifetime
     if (item.type === "income") {
-      totalIncome += amount;
+      lifetimeIncome += amount;
+    } else {
+      lifetimeExpense += amount;
     }
 
-    if (item.type === "expense") {
-      totalExpense += amount;
+    // Annual
+    if (item.year !== year) {
+      continue;
     }
 
-    const key = `${item.year}-${item.month}`;
+    if (item.type === "income") {
+      annualIncome += amount;
 
-    if (!monthlyMap.has(key)) {
-      monthlyMap.set(key, {
+      incomeProfileMap.set(
+        item.profile_id,
+        (incomeProfileMap.get(item.profile_id) ?? 0) + amount
+      );
+    } else {
+      annualExpense += amount;
+
+      expenseProfileMap.set(
+        item.profile_id,
+        (expenseProfileMap.get(item.profile_id) ?? 0) + amount
+      );
+    }
+
+    if (!monthlyMap.has(item.month)) {
+      monthlyMap.set(item.month, {
         month: item.month,
-        label: `${MONTHS[item.month - 1]} ${item.year}`,
+        label: MONTHS[item.month - 1],
         income: 0,
         expense: 0,
         balance: 0,
       });
     }
 
-    const current =
-      monthlyMap.get(key)!;
+    const current = monthlyMap.get(item.month)!;
 
     if (item.type === "income") {
       current.income += amount;
@@ -131,40 +166,50 @@ export async function getReportSummary(): Promise<ReportSummary> {
       current.expense;
   }
 
-  // ======================================
-  // LIFETIME SUMMARY
-  // ======================================
+  const incomeProfiles = (profiles ?? []).map((profile) => ({
+    profileId: profile.id,
+    name: profile.name,
+    amount: incomeProfileMap.get(profile.id) ?? 0,
+  }));
 
-  // Total Income berasal murni dari transaksi.
-  // Salary pada tabel profiles hanya digunakan
-  // sebagai konfigurasi Auto Salary.
-
-  const netCashFlow =
-    totalIncome - totalExpense;
-
-  const totalBalance =
-    netCashFlow;
+  const expenseProfiles = (profiles ?? []).map((profile) => ({
+    profileId: profile.id,
+    name: profile.name,
+    amount: expenseProfileMap.get(profile.id) ?? 0,
+  }));
 
   // TODO Sprint 2.2
   // startingBalance akan dihapus setelah onboarding
   // membuat transaksi kategori "Saldo Awal".
 
   return {
-    startingBalance: 0,
+    lifetime: {
+      balance:
+        lifetimeIncome -
+        lifetimeExpense,
+    },
 
-    totalIncome,
+    annual: {
+      balance:
+        annualIncome -
+        annualExpense,
 
-    totalExpense,
+      income: {
+        total: annualIncome,
+        profiles: incomeProfiles,
+      },
 
-    totalBalance,
-
-    totalTransaction:
-      list.length,
-
-    netCashFlow,
+      expense: {
+        total: annualExpense,
+        profiles: expenseProfiles,
+      },
+    },
 
     monthly: Array.from(
       monthlyMap.values()
+    ).sort(
+      (a, b) =>
+        a.month - b.month
     ),
   };
 }

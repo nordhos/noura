@@ -7,11 +7,11 @@ import {
   type ReportSummary,
 } from "@/services/report.service";
 
-export function useReport() {
+export function useAnnualReport(year: number) {
   return useQuery<ReportSummary>({
-    queryKey: ["report"],
+    queryKey: ["annual-report", year],
 
-    queryFn: getReportSummary,
+    queryFn: () => getReportSummary(year),
 
     staleTime: 1000 * 60,
 

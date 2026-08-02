@@ -26,7 +26,7 @@ export function DashboardHeader() {
           </h1>
 
           <p className="text-xs text-ink-faint">
-            Personal Finance System
+            Financial Clarity System
           </p>
         </div>
       </div>

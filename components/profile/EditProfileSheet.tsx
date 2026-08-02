@@ -2,18 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CalendarDays, ChevronRight } from "lucide-react";
 
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/Input";
+import { Switch } from "@/components/ui/Switch";
+
+import { DayPicker } from "@/components/period/DayPicker";
 
 import {
   Profile,
-  UpdateProfilePayload,
+  updateProfile,
 } from "@/services/profile.service";
 
-import { useUpdateProfile } from "@/hooks/useProfiles";
+import {
+  formatIDRInput,
+  parseIDRInput,
+} from "@/lib/format-currency";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EditProfileSheetProps {
   open: boolean;
@@ -21,43 +30,44 @@ interface EditProfileSheetProps {
   onClose: () => void;
 }
 
-import {
-  formatIDRInput,
-  parseIDRInput,
-} from "@/lib/format-currency";
-
 export function EditProfileSheet({
   open,
   profile,
   onClose,
 }: EditProfileSheetProps) {
-  const updateProfile = useUpdateProfile();
+  const queryClient = useQueryClient();
 
   const [name, setName] = useState("");
+
+  const [salaryDay, setSalaryDay] =
+    useState<number | null>(null);
 
   const [salary, setSalary] =
     useState("");
 
-  const [payday, setPayday] =
-    useState("");
+  const [autoSalary, setAutoSalary] =
+    useState(false);
 
-  const [savings, setSavings] = useState("");
+  const [dayPickerOpen, setDayPickerOpen] =
+    useState(false);
 
   useEffect(() => {
     if (!profile) return;
 
     setName(profile.name);
 
+    setSalaryDay(profile.salary_day);
+
     setSalary(
-      profile.salary.toString()
+      profile.base_salary
+        ? formatIDRInput(
+            String(profile.base_salary)
+          )
+        : ""
     );
 
-    setPayday(
-      profile.payday.toString()
-    );
-
-    setSavings(
-      profile.savings.toString()
+    setAutoSalary(
+      profile.auto_salary_enabled
     );
   }, [profile]);
 
@@ -68,18 +78,24 @@ export function EditProfileSheet({
 
     if (!profile) return;
 
-    const payload = {
-      id: profile.id,
-      name,
-      salary: Number(salary),
-      payday: Number(payday),
-      savings: Number(savings),
-    };
-
     try {
-      await updateProfile.mutateAsync(
-        payload
-      );
+      await updateProfile({
+        id: profile.id,
+        name: name.trim(),
+        salary_day: salaryDay,
+        base_salary:
+          salary === ""
+            ? null
+            : Number(
+                parseIDRInput(salary)
+              ),
+        auto_salary_enabled:
+          autoSalary,
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["profiles"],
+      });
 
       toast.success(
         "Profil berhasil diperbarui."
@@ -92,115 +108,131 @@ export function EditProfileSheet({
       );
     }
   }
+
   return (
-    <BottomSheet
-      open={open}
-      title="Edit Profil"
-      onClose={onClose}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5"
+    <>
+      <BottomSheet
+        open={open}
+        title="Edit Profil"
+        onClose={onClose}
       >
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
+          <FormField>
+            <label className="text-sm text-zinc-400">
+              Nama
+            </label>
 
-        <FormField>
+            <Input
+              value={name}
+              placeholder="Masukkan nama"
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+            />
+          </FormField>
 
-          <label className="text-sm text-zinc-400">
-            Nama
-          </label>
+          <FormField>
+            <label className="text-sm text-zinc-400">
+              Tanggal Gajian
+            </label>
 
-          <Input
-            value={name}
-            placeholder="Masukkan nama"
-            onChange={(e) =>
-              setName(e.target.value)
-            }
-          />
+            <button
+              type="button"
+              onClick={() =>
+                setDayPickerOpen(true)
+              }
+              className="
+                flex
+                h-12
+                w-full
+                items-center
+                justify-between
+                rounded-2xl
+                border
+                border-border
+                bg-surface
+                px-4
+                transition
+                hover:border-accent/40
+              "
+            >
+              <div className="flex items-center gap-3">
+                <CalendarDays
+                  size={18}
+                  className="text-zinc-400"
+                />
 
-        </FormField>
+                <span className="text-white">
+                  {salaryDay
+                    ? `${salaryDay} setiap bulan`
+                    : "Pilih tanggal"}
+                </span>
+              </div>
 
-        <FormField>
+              <ChevronRight
+                size={18}
+                className="text-zinc-500"
+              />
+            </button>
+          </FormField>
 
-          <label className="text-sm text-zinc-400">
-            Gaji Bulanan
-          </label>
+          <FormField>
+            <label className="text-sm text-zinc-400">
+              Gaji Pokok
+            </label>
 
-          <Input
-            type="text"
-            inputMode="numeric"
-            value={formatIDRInput(salary)}
-            placeholder="10.000.000"
-            onChange={(e) =>
-              setSalary(
-                parseIDRInput(
-                  e.target.value
+            <Input
+              inputMode="numeric"
+              placeholder="Rp0"
+              value={salary}
+              onChange={(e) =>
+                setSalary(
+                  formatIDRInput(
+                    e.target.value
+                  )
                 )
-              )
-            }
-          />
+              }
+            />
+          </FormField>
 
-        </FormField>
-        <FormField>
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-4">
+            <div>
+              <p className="font-medium text-white">
+                Auto Salary
+              </p>
 
-          <label className="text-sm text-zinc-400">
-            Tanggal Gajian
-          </label>
+              <p className="mt-1 text-sm text-zinc-500">
+                Tambahkan gaji otomatis
+                setiap bulan.
+              </p>
+            </div>
 
-          <Input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={31}
-            value={payday}
-            placeholder="25"
-            onChange={(e) =>
-              setPayday(e.target.value)
-            }
-          />
-
-        </FormField>
-
-        <FormField>
-
-          <label className="text-sm text-zinc-400">
-            Tabungan Saat Ini
-          </label>
-
-          <Input
-            type="text"
-            inputMode="numeric"
-            value={formatIDRInput(savings)}
-            placeholder="25.000.000"
-            onChange={(e) =>
-              setSavings(
-                parseIDRInput(
-                  e.target.value
-                )
-              )
-            }
-          />
-
-        </FormField>
-
-        <div className="pt-2">
+            <Switch
+              checked={autoSalary}
+              onChange={setAutoSalary}
+            />
+          </div>
 
           <Button
             type="submit"
-            disabled={
-              updateProfile.isPending ||
-              name.trim() === "" ||
-              salary === "" ||
-              payday === "" ||
-              savings === ""
-            }
+            disabled={name.trim() === ""}
           >
-            {updateProfile.isPending
-              ? "Menyimpan..."
-              : "Simpan"}
+            Simpan Perubahan
           </Button>
+        </form>
+      </BottomSheet>
 
-        </div>
-      </form>
-    </BottomSheet>
+      <DayPicker
+        open={dayPickerOpen}
+        value={salaryDay}
+        onClose={() =>
+          setDayPickerOpen(false)
+        }
+        onSelect={setSalaryDay}
+      />
+    </>
   );
 }

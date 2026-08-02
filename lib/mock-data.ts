@@ -1,5 +1,15 @@
-import { Wallet, Users, Plus, ListChecks, PieChart, ArrowDownToLine, Home, Receipt, BarChart3, User } from 'lucide-react';
-import type { DashboardSummary, QuickAction, NavItem } from './types';
+import {
+  Wallet,
+  Plus,
+  ListChecks,
+  ArrowDownToLine,
+  Home,
+  Receipt,
+  BarChart3,
+  User,
+} from "lucide-react";
+
+import type { NavItem } from "./types";
 
 /**
  * NOTE on the numbers below:
@@ -14,18 +24,7 @@ import type { DashboardSummary, QuickAction, NavItem } from './types';
  *   keeps percentages and income as independent fields — replace both with
  *   real figures from your backend, where they will actually agree.
  */
-export const dashboardSummary: DashboardSummary = {
-  month: 'Juli 2026',
-  incomes: [
-    { id: 'suami', label: 'Penghasilan Suami', icon: Wallet, amount: 8_000_000, progress: 35 },
-    { id: 'istri', label: 'Penghasilan Istri', icon: Users, amount: 6_400_000, progress: 28 },
-  ],
-  totalIncome: 14_400_000,
-  totalExpense: 120_000,
-  expensePercentage: 69,
-  remainingBalance: 0,
-  balancePercentage: 0,
-};
+
 
 export const monthOptions = [
   {

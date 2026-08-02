@@ -20,7 +20,7 @@ const display = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "NOURA — Personal Finance System",
+  title: "NOURA — Financial Clarity System",
   description:
     "Ringkasan keuangan rumah tangga: penghasilan, pengeluaran, dan sisa saldo.",
 };

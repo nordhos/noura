@@ -20,15 +20,14 @@ export function BottomSheet({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={onClose}
+      <div
         className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
       />
 
-      <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4">
+      <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none">
 
-        <div className="w-full max-w-md overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+        <div className="pointer-events-auto w-full max-w-md overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-2xl">
 
           <div className="flex justify-center pt-3">
             <div className="h-1.5 w-12 rounded-full bg-zinc-700" />

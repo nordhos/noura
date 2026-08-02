@@ -11,16 +11,21 @@ export interface TransactionCategory {
   color: string;
 }
 
-async function getCategories(
+async function getVisibleCategories(
   type: "income" | "expense"
 ): Promise<TransactionCategory[]> {
   const { data, error } = await supabase
     .from("transaction_categories")
     .select("*")
     .eq("type", type)
-    .order("name");
+    .eq("is_system", false)
+    .order("sort_order", {
+      ascending: true,
+    })
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data ?? [];
 }
@@ -30,7 +35,7 @@ export function useCategories(
 ) {
   return useQuery({
     queryKey: ["categories", type],
-    queryFn: () => getCategories(type),
+    queryFn: () => getVisibleCategories(type),
     staleTime: 1000 * 60 * 60,
   });
 }

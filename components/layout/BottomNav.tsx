@@ -26,43 +26,82 @@ export function BottomNav({
   const left = items.slice(0, 2);
   const right = items.slice(2, 4);
 
-  const mappedRight = right;
-
   return (
     <>
       <nav
-        className="sticky bottom-0 z-20 border-t border-border bg-background/95 px-6 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur"
         aria-label="Navigasi utama"
+        className="
+          fixed
+          inset-x-0
+          bottom-0
+          z-30
+          flex
+          justify-center
+          pointer-events-none
+        "
       >
-        <div className="relative grid grid-cols-5 items-center">
+        <div
+          className="
+            relative
+            w-full
+            max-w-md
+            border-t
+            border-border
+            bg-background/95
+            px-6
+            pt-3
+            pb-[max(env(safe-area-inset-bottom),0.75rem)]
+            backdrop-blur
+            pointer-events-auto
+          "
+        >
+          <div className="grid grid-cols-5 items-center">
 
-          {left.map((item) => (
-            <NavItem
-              key={item.id}
-              {...item}
-              active={pathname === item.href}
-            />
-          ))}
+            {left.map((item) => (
+              <NavItem
+                key={item.id}
+                {...item}
+                active={pathname === item.href}
+              />
+            ))}
 
-          <div />
+            <div />
 
-          {mappedRight.map((item) => (
-            <NavItem
-              key={item.id}
-              {...item}
-              active={pathname === item.href}
-            />
-          ))}
+            {right.map((item) => (
+              <NavItem
+                key={item.id}
+                {...item}
+                active={pathname === item.href}
+              />
+            ))}
 
-          <button
-            type="button"
-            aria-label="Menu Cepat"
-            onClick={() => setMenuOpen(true)}
-            className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent text-black shadow-fab transition-transform hover:scale-105"
-          >
-            <Plus size={26} />
-          </button>
+            <button
+              type="button"
+              aria-label="Menu Cepat"
+              onClick={() => setMenuOpen(true)}
+              className="
+                absolute
+                left-1/2
+                top-0
+                flex
+                h-14
+                w-14
+                -translate-x-1/2
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                bg-accent
+                text-black
+                shadow-fab
+                transition-transform
+                hover:scale-105
+              "
+            >
+              <Plus size={26} />
+            </button>
 
+          </div>
         </div>
       </nav>
 
