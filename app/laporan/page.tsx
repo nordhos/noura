@@ -32,12 +32,27 @@ export default function ReportPage() {
     } = useAnnualReport(selectedYear);
 
     const monthlyPdfData =
-    data?.monthly.map((item) => ({
-        month: String(item.month),
-        income: item.income,
-        expense: item.expense,
-        balance: item.income - item.expense,
-    })) ?? [];
+        data?.monthly.map((item) => ({
+            month: String(item.month),
+            income: item.income,
+            expense: item.expense,
+            balance: item.income - item.expense,
+        })) ?? [];
+
+
+    const profileBalances = data?.annual.income.profiles.map((incomeProfile) => {
+        const expenseProfile = data.annual.expense.profiles.find(
+            (expense) => expense.profileId === incomeProfile.profileId
+        );
+
+        return {
+            profileId: incomeProfile.profileId,
+            name: incomeProfile.name,
+            amount:
+                incomeProfile.amount -
+                (expenseProfile?.amount ?? 0),
+        };
+    }) ?? [];
 
     if (isLoading) {
         return (
@@ -69,7 +84,7 @@ export default function ReportPage() {
 
                 <div className="mb-10 flex items-center gap-3">
 
-                <BackButton href="/dashboard" />
+                    <BackButton href="/dashboard" />
 
                     <div>
 
@@ -134,11 +149,32 @@ export default function ReportPage() {
                                     Saldo Bersih (Yearly)
                                 </p>
 
-                                <h2 className="mt-2 text-3xl font-bold text-accent">
-
+                                <h2 className="mt-2 text-2xl font-bold text-accent">
                                     {formatIDR(data.annual.balance)}
-
                                 </h2>
+
+                                <div className="mt-5 border-t border-border pt-4 space-y-3">
+
+                                    {profileBalances.map((profile) => (
+
+                                        <div
+                                            key={profile.profileId}
+                                            className="flex items-center justify-between"
+                                        >
+
+                                            <span className="text-sm text-zinc-500">
+                                                {profile.name}
+                                            </span>
+
+                                            <span className="font-medium">
+                                                {formatIDR(profile.amount)}
+                                            </span>
+
+                                        </div>
+
+                                    ))}
+
+                                </div>
 
                                 <p className="mt-2 text-sm text-zinc-500">
                                     Tahun {selectedYear}
@@ -146,7 +182,7 @@ export default function ReportPage() {
 
                             </div>
 
-                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 text-1xl">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-1xl">
 
                                 💰
 
@@ -283,7 +319,7 @@ export default function ReportPage() {
 
                             </div>
 
-                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 px-3 py-2 text-lg">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/15 px-3 py-2 text-1xl">
 
                                 📈
 
@@ -335,7 +371,7 @@ export default function ReportPage() {
                             />
                         }
                         fileName={`NOURA_Laporan_${selectedYear}.pdf`}
-                        className="mt-5 w-full"
+                        className="mt-8 block w-full"
                     >
                         {({ loading }) => (
                             <Button
