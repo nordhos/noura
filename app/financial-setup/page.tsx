@@ -228,6 +228,7 @@ export default function FinancialSetupPage() {
   }
 
   return (
+  <div className="min-h-screen bg-[#000000]">
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
       {step === 1 && (
         <>
@@ -529,5 +530,6 @@ export default function FinancialSetupPage() {
         </>
       )}
     </main>
-  );
+    </div>
+);
 }
