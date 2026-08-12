@@ -245,11 +245,11 @@ export default function FinancialSetupPage() {
               <h1 className="text-center text-3xl font-bold leading-tight">
                 Selamat Datang di
                 <br />
-                NOURA
+                NOURA 👋🏻
               </h1>
 
               <p className="mt-6 text-center text-base text-zinc-400">
-                Saatnya lihat kondisi keuanganmu<br />lebih jelas.
+                Saatnya lihat kondisi keuanganmu<br />lebih jelas
               </p>
             </div>
 
