@@ -14,7 +14,10 @@ import {
 import { getAppSetting } from "@/services/app-settings.service";
 import { createFinancialSystem } from "@/services/financial-system.service";
 import { savePin } from "@/services/pin.service";
-import { login } from "@/hooks/useAuth";
+import {
+  isAuthenticated,
+  login,
+} from "@/hooks/useAuth";
 
 type Step = 1 | 2 | 3;
 
@@ -57,8 +60,12 @@ export default function FinancialSetupPage() {
           await getAppSetting();
 
         if (appSetting?.onboarding_completed) {
-          login();
-          router.replace("/dashboard");
+          if (isAuthenticated()) {
+            router.replace("/dashboard");
+          } else {
+            router.replace("/");
+          }
+
           return;
         }
       } catch (error) {
