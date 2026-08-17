@@ -109,7 +109,7 @@ export function TransactionItem({
       <ConfirmBottomSheet
         open={openConfirm}
         title="Hapus Transaksi"
-        description="Apakah Anda yakin ingin menghapus transaksi ini?"
+        description="Apakah kamu yakin ingin menghapus transaksi ini?"
         loading={mutation.isPending}
         onCancel={() =>
           setOpenConfirm(false)
