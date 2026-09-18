@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoginHeader } from "./LoginHeader";
 import { PinDots } from "./PinDots";
@@ -15,7 +15,7 @@ const PIN_LENGTH = 6;
 export function LoginScreen() {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "checking" | "error">("idle");
-  const resetRef = useRef<() => void>(() => { });
+  const resetRef = useRef<() => void>(() => {});
 
   const handleComplete = useCallback(
     async (pin: string) => {
@@ -69,6 +69,29 @@ export function LoginScreen() {
   });
 
   resetRef.current = reset;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (status !== "idle") return;
+
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        press(event.key);
+        return;
+      }
+
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        backspace();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [status, press, backspace]);
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-12">
