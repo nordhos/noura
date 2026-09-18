@@ -1,13 +1,14 @@
 import { supabase } from "@/lib/supabase";
 
-export interface DashboardProfileIncome {
+export interface DashboardProfile {
   id: string;
   name: string;
   income: number;
+  expense: number;
 }
 
 export interface DashboardSummary {
-  profiles: DashboardProfileIncome[];
+  profiles: DashboardProfile[];
 
   incomes: {
     total: number;
@@ -39,26 +40,36 @@ export async function getDashboardSummary(
   year: number,
   month: number
 ): Promise<DashboardSummary> {
-
-  const { data: profiles, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select("id,name")
-      .order("created_at", {
-        ascending: true,
-      });
+  const {
+    data: profiles,
+    error: profileError,
+  } = await supabase
+    .from("profiles")
+    .select("id,name")
+    .order("created_at", {
+      ascending: true,
+    });
 
   if (profileError) {
     throw profileError;
   }
 
-  const profileList = (profiles ?? []) as Profile[];
+  const profileList =
+    (profiles ?? []) as Profile[];
 
-  const startDate = new Date(year, month - 1, 1)
+  const startDate = new Date(
+    year,
+    month - 1,
+    1
+  )
     .toISOString()
     .split("T")[0];
 
-  const endDate = new Date(year, month, 0)
+  const endDate = new Date(
+    year,
+    month,
+    0
+  )
     .toISOString()
     .split("T")[0];
 
@@ -83,40 +94,57 @@ export async function getDashboardSummary(
   const transactionList =
     (transactions ?? []) as Transaction[];
 
-  const profilesIncome =
+  const profilesSummary =
     profileList.map((profile) => {
-      const income = transactionList
-        .filter(
-          (transaction) =>
-            transaction.type === "income" &&
-            transaction.profile_id === profile.id
-        )
-        .reduce(
-          (total, transaction) =>
-            total + Number(transaction.amount),
-          0
-        );
+      const income =
+        transactionList
+          .filter(
+            (transaction) =>
+              transaction.type === "income" &&
+              transaction.profile_id ===
+                profile.id
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              Number(transaction.amount),
+            0
+          );
+
+      const expense =
+        transactionList
+          .filter(
+            (transaction) =>
+              transaction.type === "expense" &&
+              transaction.profile_id ===
+                profile.id
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              Number(transaction.amount),
+            0
+          );
 
       return {
         id: profile.id,
         name: profile.name,
         income,
+        expense,
       };
     });
 
-  const totalIncome = profilesIncome.reduce(
-    (total, profile) => total + profile.income,
-    0
-  );
+  const totalIncome =
+    profilesSummary.reduce(
+      (total, profile) =>
+        total + profile.income,
+      0
+    );
 
-  const totalExpense = transactionList
-    .filter(
-      (transaction) =>
-        transaction.type === "expense"
-    )
-    .reduce(
-      (total, transaction) =>
-        total + Number(transaction.amount),
+  const totalExpense =
+    profilesSummary.reduce(
+      (total, profile) =>
+        total + profile.expense,
       0
     );
 
@@ -124,7 +152,7 @@ export async function getDashboardSummary(
     totalIncome - totalExpense;
 
   return {
-    profiles: profilesIncome,
+    profiles: profilesSummary,
 
     incomes: {
       total: totalIncome,
@@ -136,8 +164,10 @@ export async function getDashboardSummary(
         totalIncome === 0
           ? 0
           : Math.round(
-            (totalExpense / totalIncome) * 100
-          ),
+              (totalExpense /
+                totalIncome) *
+                100
+            ),
     },
 
     balance: {
@@ -146,8 +176,10 @@ export async function getDashboardSummary(
         totalIncome === 0
           ? 0
           : Math.round(
-            (balance / totalIncome) * 100
-          ),
+              (balance /
+                totalIncome) *
+                100
+            ),
     },
   };
 }

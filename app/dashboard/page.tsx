@@ -30,7 +30,6 @@ export default function DashboardPage() {
 
   const {
     setAvailablePeriods,
-    monthLabel,
   } = useFinanceStore();
 
   useEffect(() => {
@@ -84,8 +83,6 @@ export default function DashboardPage() {
     );
   }
 
-  const currentMonthLabel = monthLabel();
-
   return (
     <>
       <main className="mx-auto w-full max-w-md space-y-6 px-5 pb-28 pt-6">
@@ -128,6 +125,7 @@ export default function DashboardPage() {
         <ExpenseSummaryCard
           amount={data.expenses.total}
           percentage={data.expenses.percentage}
+          profiles={data.profiles}
         />
 
         <BalanceCard
@@ -136,7 +134,7 @@ export default function DashboardPage() {
         />
 
         <FinancialInsight
-          monthLabel={currentMonthLabel}
+          monthLabel={useFinanceStore.getState().monthLabel()}
           totalIncome={data.incomes.total}
           totalExpense={data.expenses.total}
         />
