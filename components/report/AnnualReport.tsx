@@ -111,17 +111,22 @@ const styles = StyleSheet.create({
     },
 
     incomeCol: {
-        width: "26%",
+        width: "22%",
+        textAlign: "right",
+    },
+
+    returnCol: {
+        width: "22%",
         textAlign: "right",
     },
 
     expenseCol: {
-        width: "26%",
+        width: "22%",
         textAlign: "right",
     },
 
     balanceCol: {
-        width: "24%",
+        width: "20%",
         textAlign: "right",
     },
 
@@ -145,6 +150,7 @@ export interface AnnualProfileSummary {
 export interface AnnualMonthlySummary {
     month: string;
     income: number;
+    returnAmount: number;
     expense: number;
     balance: number;
 }
@@ -157,6 +163,8 @@ interface Props {
     annualBalance: number;
 
     totalIncome: number;
+
+    totalReturn: number;
 
     totalExpense: number;
 
@@ -174,6 +182,7 @@ export function AnnualReport({
     totalIncome,
     totalExpense,
     incomeProfiles,
+    totalReturn,
     expenseProfiles,
     monthly,
 }: Props) {
@@ -297,6 +306,18 @@ export function AnnualReport({
 
                     <View style={styles.divider} />
 
+                    <View style={styles.row}>
+                        <Text style={styles.value}>
+                            Total Pengembalian
+                        </Text>
+
+                        <Text style={styles.value}>
+                            {currency(totalReturn)}
+                        </Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
                     <Text style={styles.groupTitle}>
                         PENGELUARAN
                     </Text>
@@ -339,11 +360,15 @@ export function AnnualReport({
                     </Text>
 
                     <Text style={styles.incomeCol}>
-                        Masuk
+                        Pemasukan
+                    </Text>
+
+                    <Text style={styles.returnCol}>
+                        Pengembalian
                     </Text>
 
                     <Text style={styles.expenseCol}>
-                        Keluar
+                        Pengeluaran
                     </Text>
 
                     <Text style={styles.balanceCol}>
@@ -362,6 +387,10 @@ export function AnnualReport({
 
                         <Text style={styles.incomeCol}>
                             + {compact(item.income)}
+                        </Text>
+
+                        <Text style={styles.returnCol}>
+                            + {compact(item.returnAmount)}
                         </Text>
 
                         <Text style={styles.expenseCol}>
