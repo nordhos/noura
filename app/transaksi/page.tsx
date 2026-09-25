@@ -74,6 +74,12 @@ export default function TransactionPage() {
       type: item.type,
 
       amount: Number(item.amount),
+
+      fromProfile:
+        item.from_profile?.name,
+
+      toProfile:
+        item.to_profile?.name,
     })
   );
 

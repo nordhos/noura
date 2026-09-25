@@ -29,10 +29,8 @@ VALUES
 ('Bonus',              'income', true, false, 4),
 ('THR',                'income', true, false, 5),
 ('Perjalanan Dinas',   'income', true, false, 6),
-('Transfer Masuk',     'income', true, false, 7),
-('Penyesuaian Saldo',  'income', true, false, 8),
-('Lainnya',            'income', true, false, 9),
-('Donasi',             'income', true, false, 10),
+('Penyesuaian Saldo',  'income', true, false, 7),
+('Lainnya',            'income', true, false, 8),
 
 -- =====================================================
 -- EXPENSE
@@ -48,6 +46,7 @@ VALUES
 ('Tagihan',                 'expense', true, false,  8),
 ('Cicilan',                 'expense', true, false,  9),
 ('Tabungan & Investasi',    'expense', true, false, 10),
-('Lainnya',                 'expense', true, false, 11);
+('Donasi',                  'expense', true, false, 11),
+('Lainnya',                 'expense', true, false, 12);
 
 COMMIT;
