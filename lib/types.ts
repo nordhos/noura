@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
 
 export interface IncomeSource {
   id: string;
@@ -23,14 +23,35 @@ export interface NavItem {
   href: string;
 }
 
+export interface DashboardProfile {
+  id: string;
+  name: string;
+  income: number;
+  expense: number;
+  return: number;
+  transferIn: number;
+  transferOut: number;
+  balance: number;
+}
+
 export interface DashboardSummary {
-  month: string;
-  incomes: IncomeSource[];
-  totalIncome: number;
-  totalExpense: number;
-  /** 0–100, shown next to "dari total penghasilan" under the expense figure */
-  expensePercentage: number;
-  remainingBalance: number;
-  /** 0–100, shown next to "dari total penghasilan" under the balance figure */
-  balancePercentage: number;
+  profiles: DashboardProfile[];
+
+  incomes: {
+    total: number;
+  };
+
+  expenses: {
+    total: number;
+    percentage: number;
+  };
+
+  returns: {
+    total: number;
+  };
+
+  balance: {
+    total: number;
+    percentage: number;
+  };
 }

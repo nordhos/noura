@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -9,6 +9,7 @@ import { IncomeCard } from "@/components/dashboard/IncomeCard";
 import { TotalIncomeCard } from "@/components/dashboard/TotalIncomeCard";
 import { ExpenseSummaryCard } from "@/components/dashboard/ExpenseSummaryCard";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
+import { BalanceBreakdownSheet } from "@/components/dashboard/BalanceBreakdownSheet";
 import { FinancialInsight } from "@/components/dashboard/FinancialInsight";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 
@@ -27,6 +28,9 @@ export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
 
   const router = useRouter();
+
+  const [balanceBreakdownOpen, setBalanceBreakdownOpen] =
+    useState(false);
 
   const {
     setAvailablePeriods,
@@ -131,6 +135,9 @@ export default function DashboardPage() {
         <BalanceCard
           amount={data.balance.total}
           percentage={data.balance.percentage}
+          onClick={() =>
+            setBalanceBreakdownOpen(true)
+          }
         />
 
         <FinancialInsight
@@ -141,6 +148,15 @@ export default function DashboardPage() {
 
         <RecentTransactions />
       </main>
+
+      <BalanceBreakdownSheet
+        open={balanceBreakdownOpen}
+        onClose={() =>
+          setBalanceBreakdownOpen(false)
+        }
+        profiles={data.profiles}
+        totalBalance={data.balance.total}
+      />
 
       <BottomNav items={navItems} />
     </>

@@ -5,6 +5,10 @@ export interface DashboardProfile {
   name: string;
   income: number;
   expense: number;
+  return: number;
+  transferIn: number;
+  transferOut: number;
+  balance: number;
 }
 
 export interface DashboardSummary {
@@ -19,6 +23,10 @@ export interface DashboardSummary {
     percentage: number;
   };
 
+  returns: {
+    total: number;
+  };
+
   balance: {
     total: number;
     percentage: number;
@@ -31,9 +39,11 @@ interface Profile {
 }
 
 interface Transaction {
-  profile_id: string;
+  profile_id: string | null;
+  from_profile_id: string | null;
+  to_profile_id: string | null;
   amount: number | string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "transfer" | "return";
 }
 
 export async function getDashboardSummary(
@@ -80,6 +90,8 @@ export async function getDashboardSummary(
     .from("transactions")
     .select(`
       profile_id,
+      from_profile_id,
+      to_profile_id,
       amount,
       type,
       transaction_date
@@ -126,11 +138,67 @@ export async function getDashboardSummary(
             0
           );
 
+      const returnAmount =
+        transactionList
+          .filter(
+            (transaction) =>
+              transaction.type === "return" &&
+              transaction.profile_id ===
+                profile.id
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              Number(transaction.amount),
+            0
+          );
+
+      const transferIn =
+        transactionList
+          .filter(
+            (transaction) =>
+              transaction.type === "transfer" &&
+              transaction.to_profile_id ===
+                profile.id
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              Number(transaction.amount),
+            0
+          );
+
+      const transferOut =
+        transactionList
+          .filter(
+            (transaction) =>
+              transaction.type === "transfer" &&
+              transaction.from_profile_id ===
+                profile.id
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              Number(transaction.amount),
+            0
+          );
+
+      const balance =
+        income +
+        returnAmount +
+        transferIn -
+        expense -
+        transferOut;
+
       return {
         id: profile.id,
         name: profile.name,
         income,
         expense,
+        return: returnAmount,
+        transferIn,
+        transferOut,
+        balance,
       };
     });
 
@@ -148,8 +216,24 @@ export async function getDashboardSummary(
       0
     );
 
+  const totalReturn =
+    profilesSummary.reduce(
+      (total, profile) =>
+        total + profile.return,
+      0
+    );
+
+  /*
+   * Transfer adalah perpindahan uang
+   * di dalam rumah tangga.
+   *
+   * Karena itu transfer tidak mengubah
+   * saldo rumah tangga secara keseluruhan.
+   */
   const balance =
-    totalIncome - totalExpense;
+    totalIncome +
+    totalReturn -
+    totalExpense;
 
   return {
     profiles: profilesSummary,
@@ -168,6 +252,10 @@ export async function getDashboardSummary(
                 totalIncome) *
                 100
             ),
+    },
+
+    returns: {
+      total: totalReturn,
     },
 
     balance: {

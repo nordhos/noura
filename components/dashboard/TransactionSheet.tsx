@@ -4,7 +4,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { TransactionForm } from "./TransactionForm";
 
 interface TransactionSheetProps {
-  type: "income" | "expense";
+  type: "income" | "expense" | "transfer" | "return";
   open: boolean;
   onClose: () => void;
 }
@@ -21,7 +21,11 @@ export function TransactionSheet({
       title={
         type === "income"
           ? "Catat Penghasilan"
-          : "Catat Pengeluaran"
+          : type === "expense"
+            ? "Catat Pengeluaran"
+            : type === "transfer"
+              ? "Catat Transfer"
+              : "Catat Pengembalian"
       }
     >
       <TransactionForm

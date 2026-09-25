@@ -4,10 +4,8 @@ import { downloadTransactionReport } from "@/lib/pdf/downloadTransactionReport";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/ui/BackButton";
-
 import { BottomNav } from "@/components/layout/BottomNav";
 import { TransactionItem } from "@/components/dashboard/TransactionItem";
-
 import { navItems } from "@/lib/mock-data";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useFinanceStore } from "@/stores/useFinanceStore";
@@ -23,6 +21,7 @@ export default function TransactionPage() {
   const {
     data = [],
     isLoading,
+    error,
   } = useTransactions(
     selectedYear,
     selectedMonth
@@ -130,14 +129,23 @@ export default function TransactionPage() {
           </button>
         </div>
 
-        {isLoading && <p>Loading...</p>}
+        {isLoading && (
+          <p>Loading...</p>
+        )}
 
         {!isLoading &&
+          !error &&
           data.length === 0 && (
             <p className="text-zinc-400">
               Belum ada transaksi.
             </p>
           )}
+
+        {error && (
+          <p className="text-red-400">
+            Gagal memuat transaksi.
+          </p>
+        )}
 
         <div className="divide-y divide-border rounded-2xl border border-border bg-card px-4">
           {data.map((item) => (
@@ -150,8 +158,7 @@ export default function TransactionPage() {
                   ?.name ?? "-"
               }
               profile={
-                item.profiles?.name ??
-                "-"
+                item.profiles?.name ?? "-"
               }
               amount={Number(item.amount)}
               date={new Date(
@@ -160,6 +167,12 @@ export default function TransactionPage() {
                 day: "numeric",
                 month: "long",
               })}
+              fromProfile={
+                item.from_profile?.name
+              }
+              toProfile={
+                item.to_profile?.name
+              }
             />
           ))}
         </div>

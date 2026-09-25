@@ -4,6 +4,8 @@ import { useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ArrowLeftRight,
+  RotateCcw,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -14,11 +16,13 @@ import { useDeleteTransaction } from "@/hooks/useTransactions";
 
 interface TransactionItemProps {
   id: string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "transfer" | "return";
   category: string;
   profile: string;
   amount: number;
   date: string;
+  fromProfile?: string;
+  toProfile?: string;
 }
 
 export function TransactionItem({
@@ -28,9 +32,9 @@ export function TransactionItem({
   profile,
   amount,
   date,
+  fromProfile,
+  toProfile,
 }: TransactionItemProps) {
-  const income = type === "income";
-
   const mutation = useDeleteTransaction();
 
   const [openConfirm, setOpenConfirm] =
@@ -50,46 +54,77 @@ export function TransactionItem({
     }
   }
 
+  const isIncome = type === "income";
+  const isExpense = type === "expense";
+  const isTransfer = type === "transfer";
+  const isReturn = type === "return";
+
+  let icon;
+  let iconClass;
+  let amountClass;
+  let amountPrefix = "";
+
+  if (isIncome) {
+    icon = <ArrowDownLeft size={18} />;
+    iconClass =
+      "bg-emerald-500/15 text-emerald-400";
+    amountClass = "text-emerald-400";
+    amountPrefix = "+";
+  } else if (isExpense) {
+    icon = <ArrowUpRight size={18} />;
+    iconClass =
+      "bg-red-500/15 text-red-400";
+    amountClass = "text-red-400";
+    amountPrefix = "-";
+  } else if (isTransfer) {
+    icon = <ArrowLeftRight size={18} />;
+    iconClass =
+      "bg-blue-500/15 text-blue-400";
+    amountClass = "text-blue-400";
+  } else {
+    icon = <RotateCcw size={18} />;
+    iconClass =
+      "bg-emerald-500/15 text-emerald-400";
+    amountClass = "text-emerald-400";
+    amountPrefix = "+";
+  }
+
+  const title = isTransfer
+    ? "Transfer"
+    : isReturn
+      ? "Pengembalian"
+      : category;
+
+  const subtitle = isTransfer
+    ? `${fromProfile ?? "-"} → ${toProfile ?? "-"} • ${date}`
+    : `${profile} • ${date}`;
+
   return (
     <>
       <div className="flex items-center justify-between py-3">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
-              income
-                ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-red-500/15 text-red-400"
-            }`}
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconClass}`}
           >
-            {income ? (
-              <ArrowDownLeft size={18} />
-            ) : (
-              <ArrowUpRight size={18} />
-            )}
+            {icon}
           </div>
 
           <div>
             <p className="font-medium text-white">
-              {category}
+              {title}
             </p>
 
             <p className="text-sm text-zinc-400">
-              {profile}
-              {" • "}
-              {date}
+              {subtitle}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <p
-            className={`font-semibold ${
-              income
-                ? "text-emerald-400"
-                : "text-red-400"
-            }`}
+            className={`font-semibold ${amountClass}`}
           >
-            {income ? "+" : "-"}
+            {amountPrefix}
             {formatIDR(amount)}
           </p>
 

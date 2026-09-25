@@ -8,11 +8,15 @@ import {
 
 import {
   createTransaction,
+  createTransfer,
+  createReturn,
   deleteTransaction,
   getTransactions,
   getRecentTransactions,
   getAllTransactions,
   type TransactionPayload,
+  type TransferPayload,
+  type ReturnPayload,
 } from "@/services/transaction.service";
 
 export function useTransactions(
@@ -87,6 +91,68 @@ export function useDeleteTransaction() {
 
   return useMutation({
     mutationFn: deleteTransaction,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["recent-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["all-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["profiles"],
+      });
+    },
+  });
+}
+
+export function useCreateTransfer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: TransferPayload) =>
+      createTransfer(payload),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["recent-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["all-transactions"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["profiles"],
+      });
+    },
+  });
+}
+
+export function useCreateReturn() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ReturnPayload) =>
+      createReturn(payload),
 
     onSuccess: () => {
       queryClient.invalidateQueries({

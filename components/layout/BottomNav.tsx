@@ -22,6 +22,8 @@ export function BottomNav({
   const [menuOpen, setMenuOpen] = useState(false);
   const [incomeOpen, setIncomeOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [returnOpen, setReturnOpen] = useState(false);
 
   const left = items.slice(0, 2);
   const right = items.slice(2, 4);
@@ -105,23 +107,42 @@ export function BottomNav({
         </div>
       </nav>
 
+      {/* Floating Action Menu */}
       <FloatingActionMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onIncome={() => setIncomeOpen(true)}
         onExpense={() => setExpenseOpen(true)}
+        onTransfer={() => setTransferOpen(true)}
+        onReturn={() => setReturnOpen(true)}
       />
 
+      {/* Penghasilan */}
       <TransactionSheet
         type="income"
         open={incomeOpen}
         onClose={() => setIncomeOpen(false)}
       />
 
+      {/* Pengeluaran */}
       <TransactionSheet
         type="expense"
         open={expenseOpen}
         onClose={() => setExpenseOpen(false)}
+      />
+
+      {/* Transfer */}
+      <TransactionSheet
+        type="transfer"
+        open={transferOpen}
+        onClose={() => setTransferOpen(false)}
+      />
+
+      {/* Pengembalian */}
+      <TransactionSheet
+        type="return"
+        open={returnOpen}
+        onClose={() => setReturnOpen(false)}
       />
     </>
   );

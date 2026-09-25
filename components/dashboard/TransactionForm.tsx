@@ -13,7 +13,11 @@ import { ProfileSelector } from "@/components/ui/ProfileSelector";
 
 import { useProfiles } from "@/hooks/useProfiles";
 import { useCategories } from "@/hooks/useCategories";
-import { useCreateTransaction } from "@/hooks/useTransactions";
+import {
+  useCreateTransaction,
+  useCreateTransfer,
+  useCreateReturn,
+} from "@/hooks/useTransactions";
 
 import {
   formatIDRInput,
@@ -21,7 +25,7 @@ import {
 } from "@/lib/format-currency";
 
 interface TransactionFormProps {
-  type: "income" | "expense";
+  type: "income" | "expense" | "transfer" | "return";
   onSuccess?: () => void;
 }
 
@@ -36,12 +40,29 @@ export function TransactionForm({
   onSuccess,
 }: TransactionFormProps) {
   const { data: profiles = [] } = useProfiles();
-  const { data: categories = [] } =
-    useCategories(type);
 
-  const mutation = useCreateTransaction();
+  const categoryType =
+    type === "expense" ? "expense" : "income";
+
+  const { data: categories = [] } =
+    useCategories(categoryType);
+
+  const transactionMutation =
+    useCreateTransaction();
+
+  const transferMutation =
+    useCreateTransfer();
+
+  const returnMutation =
+    useCreateReturn();
 
   const [profileId, setProfileId] =
+    useState("");
+
+  const [fromProfileId, setFromProfileId] =
+    useState("");
+
+  const [toProfileId, setToProfileId] =
     useState("");
 
   const [categoryId, setCategoryId] =
@@ -56,11 +77,120 @@ export function TransactionForm({
   const [categoryOpen, setCategoryOpen] =
     useState(false);
 
+  const [fromProfileOpen, setFromProfileOpen] =
+    useState(false);
+
+  const [toProfileOpen, setToProfileOpen] =
+    useState(false);
+
   const [transactionDate, setTransactionDate] =
     useState(getTodayIndonesia());
 
-  async function handleSubmit() {
+  const isPending =
+    transactionMutation.isPending ||
+    transferMutation.isPending ||
+    returnMutation.isPending;
 
+  async function handleSubmit() {
+    /*
+     * TRANSFER
+     */
+    if (type === "transfer") {
+      if (!fromProfileId) {
+        toast.error("Pilih pengirim");
+        return;
+      }
+
+      if (!toProfileId) {
+        toast.error("Pilih penerima");
+        return;
+      }
+
+      if (fromProfileId === toProfileId) {
+        toast.error("Pengirim dan penerima tidak boleh sama");
+        return;
+      }
+
+      if (!amount) {
+        toast.error("Masukkan nominal");
+        return;
+      }
+
+      try {
+        await transferMutation.mutateAsync({
+          fromProfileId,
+          toProfileId,
+          amount: Number(amount),
+          description,
+          transactionDate,
+        });
+
+        toast.success("Transfer berhasil disimpan");
+
+        setFromProfileId("");
+        setToProfileId("");
+        setAmount("");
+        setDescription("");
+
+        onSuccess?.();
+      } catch (error) {
+        console.error(error);
+
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Terjadi kesalahan saat menyimpan transfer."
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * PENGEMBALIAN
+     */
+    if (type === "return") {
+      if (!profileId) {
+        toast.error("Pilih penerima");
+        return;
+      }
+
+      if (!amount) {
+        toast.error("Masukkan nominal");
+        return;
+      }
+
+      try {
+        await returnMutation.mutateAsync({
+          profileId,
+          amount: Number(amount),
+          description,
+          transactionDate,
+        });
+
+        toast.success("Pengembalian berhasil disimpan");
+
+        setProfileId("");
+        setAmount("");
+        setDescription("");
+
+        onSuccess?.();
+      } catch (error) {
+        console.error(error);
+
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Terjadi kesalahan saat menyimpan pengembalian."
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * PENGHASILAN / PENGELUARAN
+     */
     if (!profileId) {
       toast.error("Pilih penerima");
       return;
@@ -77,8 +207,7 @@ export function TransactionForm({
     }
 
     try {
-
-      await mutation.mutateAsync({
+      await transactionMutation.mutateAsync({
         profileId,
         categoryId,
         type,
@@ -99,21 +228,210 @@ export function TransactionForm({
       setDescription("");
 
       onSuccess?.();
-
     } catch (error) {
-
       console.error(error);
-    
+
       toast.error(
         error instanceof Error
           ? error.message
           : "Terjadi kesalahan saat menyimpan transaksi."
       );
-    
     }
-
   }
 
+  /*
+   * TRANSFER FORM
+   */
+  if (type === "transfer") {
+    return (
+      <div className="space-y-6">
+
+        <PickerField
+          label="Dari"
+          value={
+            profiles.find(
+              (profile) =>
+                profile.id === fromProfileId
+            )?.name ?? "Pilih pengirim"
+          }
+          onClick={() =>
+            setFromProfileOpen(true)
+          }
+        />
+
+        <PickerSheet
+          open={fromProfileOpen}
+          title="Pilih Pengirim"
+          value={fromProfileId}
+          options={profiles.map((profile) => ({
+            value: profile.id,
+            label: profile.name,
+          }))}
+          onClose={() =>
+            setFromProfileOpen(false)
+          }
+          onSelect={setFromProfileId}
+        />
+
+        <PickerField
+          label="Kepada"
+          value={
+            profiles.find(
+              (profile) =>
+                profile.id === toProfileId
+            )?.name ?? "Pilih penerima"
+          }
+          onClick={() =>
+            setToProfileOpen(true)
+          }
+        />
+
+        <PickerSheet
+          open={toProfileOpen}
+          title="Pilih Penerima"
+          value={toProfileId}
+          options={profiles.map((profile) => ({
+            value: profile.id,
+            label: profile.name,
+          }))}
+          onClose={() =>
+            setToProfileOpen(false)
+          }
+          onSelect={setToProfileId}
+        />
+
+        <FormField>
+          <Label>Tanggal</Label>
+
+          <Input
+            type="date"
+            value={transactionDate}
+            onChange={(e) =>
+              setTransactionDate(
+                e.target.value
+              )
+            }
+          />
+        </FormField>
+
+        <FormField>
+          <Label>Nominal</Label>
+
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={formatIDRInput(amount)}
+            onChange={(e) =>
+              setAmount(
+                parseIDRInput(
+                  e.target.value
+                )
+              )
+            }
+          />
+        </FormField>
+
+        <FormField>
+          <Label>Keterangan</Label>
+
+          <Input
+            value={description}
+            onChange={(e) =>
+              setDescription(
+                e.target.value
+              )
+            }
+          />
+        </FormField>
+
+        <Button
+          type="button"
+          disabled={isPending}
+          onClick={handleSubmit}
+        >
+          {isPending
+            ? "Menyimpan..."
+            : "Simpan Transfer"}
+        </Button>
+
+      </div>
+    );
+  }
+
+  /*
+   * PENGEMBALIAN FORM
+   */
+  if (type === "return") {
+    return (
+      <div className="space-y-6">
+
+        <ProfileSelector
+          value={profileId}
+          profiles={profiles}
+          onChange={setProfileId}
+        />
+
+        <FormField>
+          <Label>Tanggal</Label>
+
+          <Input
+            type="date"
+            value={transactionDate}
+            onChange={(e) =>
+              setTransactionDate(
+                e.target.value
+              )
+            }
+          />
+        </FormField>
+
+        <FormField>
+          <Label>Nominal</Label>
+
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={formatIDRInput(amount)}
+            onChange={(e) =>
+              setAmount(
+                parseIDRInput(
+                  e.target.value
+                )
+              )
+            }
+          />
+        </FormField>
+
+        <FormField>
+          <Label>Keterangan</Label>
+
+          <Input
+            value={description}
+            onChange={(e) =>
+              setDescription(
+                e.target.value
+              )
+            }
+          />
+        </FormField>
+
+        <Button
+          type="button"
+          disabled={isPending}
+          onClick={handleSubmit}
+        >
+          {isPending
+            ? "Menyimpan..."
+            : "Simpan Pengembalian"}
+        </Button>
+
+      </div>
+    );
+  }
+
+  /*
+   * PENGHASILAN / PENGELUARAN FORM
+   */
   return (
     <div className="space-y-6">
 
@@ -127,7 +445,8 @@ export function TransactionForm({
         label="Kategori"
         value={
           categories.find(
-            c => c.id === categoryId
+            (category) =>
+              category.id === categoryId
           )?.name ?? "Pilih kategori"
         }
         onClick={() =>
@@ -140,7 +459,7 @@ export function TransactionForm({
         title="Pilih Kategori"
         value={categoryId}
         options={categories.map(
-          item => ({
+          (item) => ({
             value: item.id,
             label: item.name,
           })
@@ -152,7 +471,6 @@ export function TransactionForm({
       />
 
       <FormField>
-
         <Label>Tanggal</Label>
 
         <Input
@@ -164,11 +482,9 @@ export function TransactionForm({
             )
           }
         />
-
       </FormField>
 
       <FormField>
-
         <Label>Nominal</Label>
 
         <Input
@@ -183,11 +499,9 @@ export function TransactionForm({
             )
           }
         />
-
       </FormField>
 
       <FormField>
-
         <Label>Keterangan</Label>
 
         <Input
@@ -198,15 +512,14 @@ export function TransactionForm({
             )
           }
         />
-
       </FormField>
 
       <Button
         type="button"
-        disabled={mutation.isPending}
+        disabled={isPending}
         onClick={handleSubmit}
       >
-        {mutation.isPending
+        {isPending
           ? "Menyimpan..."
           : type === "income"
             ? "Simpan Penghasilan"

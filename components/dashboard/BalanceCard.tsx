@@ -5,16 +5,22 @@ import { formatIDR, clampPercent } from "@/lib/format-currency";
 interface BalanceCardProps {
   amount: number;
   percentage: number;
+  onClick?: () => void;
 }
 
 export function BalanceCard({
   amount,
   percentage,
+  onClick,
 }: BalanceCardProps) {
   const pct = clampPercent(percentage);
 
   return (
-    <Card variant="highlight" className="relative overflow-hidden">
+    <Card
+      variant="highlight"
+      className="relative overflow-hidden cursor-pointer transition-transform active:scale-[0.99]"
+      onClick={onClick}
+    >
       <div className="relative flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="mb-2 text-sm text-ink-muted">
