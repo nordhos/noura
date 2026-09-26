@@ -44,10 +44,17 @@ export interface ReportSummary {
 
 interface Transaction {
     profile_id: string | null;
+    category_id: string | null;
     amount: number | string;
     type: "income" | "expense" | "transfer" | "return";
     month: number;
     year: number;
+}
+
+interface Category {
+    id: string;
+    name: string;
+    type: string;
 }
 
 const MONTHS = [
@@ -72,6 +79,7 @@ export async function getReportSummary(
         .from("transactions")
         .select(`
             profile_id,
+            category_id,
             amount,
             type,
             month,
@@ -97,7 +105,29 @@ export async function getReportSummary(
         throw profileError;
     }
 
+    const { data: categories, error: categoryError } = await supabase
+        .from("transaction_categories")
+        .select(`
+            id,
+            name,
+            type
+        `);
+
+    if (categoryError) {
+        throw categoryError;
+    }
+
     const list = (transactions ?? []) as Transaction[];
+    const categoryList = (categories ?? []) as Category[];
+
+    const openingBalanceCategory = categoryList.find(
+        (category) =>
+            category.name === "Saldo Awal" &&
+            category.type === "income"
+    );
+
+    const openingBalanceCategoryId =
+        openingBalanceCategory?.id ?? null;
 
     // ============================
     // Lifetime
@@ -140,7 +170,8 @@ export async function getReportSummary(
             lifetimeExpense += amount;
         }
 
-        // Transfer tidak memengaruhi household balance.
+        // Transfer tidak memiliki dampak
+        // terhadap household balance.
         if (item.type === "transfer") {
             continue;
         }
@@ -159,8 +190,7 @@ export async function getReportSummary(
             if (item.profile_id) {
                 incomeProfileMap.set(
                     item.profile_id,
-                    (incomeProfileMap.get(item.profile_id) ?? 0) +
-                        amount
+                    (incomeProfileMap.get(item.profile_id) ?? 0) + amount
                 );
             }
         }
@@ -171,8 +201,7 @@ export async function getReportSummary(
             if (item.profile_id) {
                 returnProfileMap.set(
                     item.profile_id,
-                    (returnProfileMap.get(item.profile_id) ?? 0) +
-                        amount
+                    (returnProfileMap.get(item.profile_id) ?? 0) + amount
                 );
             }
         }
@@ -183,15 +212,26 @@ export async function getReportSummary(
             if (item.profile_id) {
                 expenseProfileMap.set(
                     item.profile_id,
-                    (expenseProfileMap.get(item.profile_id) ?? 0) +
-                        amount
+                    (expenseProfileMap.get(item.profile_id) ?? 0) + amount
                 );
             }
         }
 
         // ============================
-        // Monthly
+        // Monthly Cash Flow
         // ============================
+
+        // Saldo Awal adalah posisi awal,
+        // bukan arus uang pada bulan tersebut.
+        //
+        // Karena itu transaksi Saldo Awal
+        // tidak dimasukkan ke Cash Flow Bulanan.
+        if (
+            openingBalanceCategoryId &&
+            item.category_id === openingBalanceCategoryId
+        ) {
+            continue;
+        }
 
         if (!monthlyMap.has(item.month)) {
             monthlyMap.set(item.month, {
@@ -224,36 +264,23 @@ export async function getReportSummary(
             current.expense;
     }
 
-    const incomeProfiles = (profiles ?? []).map(
-        (profile) => ({
-            profileId: profile.id,
-            name: profile.name,
-            amount:
-                incomeProfileMap.get(profile.id) ?? 0,
-        })
-    );
+    const incomeProfiles = (profiles ?? []).map((profile) => ({
+        profileId: profile.id,
+        name: profile.name,
+        amount: incomeProfileMap.get(profile.id) ?? 0,
+    }));
 
-    const returnProfiles = (profiles ?? []).map(
-        (profile) => ({
-            profileId: profile.id,
-            name: profile.name,
-            amount:
-                returnProfileMap.get(profile.id) ?? 0,
-        })
-    );
+    const returnProfiles = (profiles ?? []).map((profile) => ({
+        profileId: profile.id,
+        name: profile.name,
+        amount: returnProfileMap.get(profile.id) ?? 0,
+    }));
 
-    const expenseProfiles = (profiles ?? []).map(
-        (profile) => ({
-            profileId: profile.id,
-            name: profile.name,
-            amount:
-                expenseProfileMap.get(profile.id) ?? 0,
-        })
-    );
-
-    // TODO Sprint 2.2
-    // startingBalance akan dihapus setelah onboarding
-    // membuat transaksi kategori "Saldo Awal".
+    const expenseProfiles = (profiles ?? []).map((profile) => ({
+        profileId: profile.id,
+        name: profile.name,
+        amount: expenseProfileMap.get(profile.id) ?? 0,
+    }));
 
     return {
         lifetime: {
@@ -288,8 +315,7 @@ export async function getReportSummary(
         monthly: Array.from(
             monthlyMap.values()
         ).sort(
-            (a, b) =>
-                a.month - b.month
+            (a, b) => a.month - b.month
         ),
     };
 }
