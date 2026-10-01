@@ -189,7 +189,7 @@ export function TransactionForm({
     }
 
     /*
-     * PENGHASILAN / PENGELUARAN
+     * PEMASUKAN / PENGELUARAN
      */
     if (!profileId) {
       toast.error("Pilih penerima");
@@ -218,7 +218,7 @@ export function TransactionForm({
 
       toast.success(
         type === "income"
-          ? "Penghasilan berhasil disimpan"
+          ? "Pemasukan berhasil disimpan"
           : "Pengeluaran berhasil disimpan"
       );
 
@@ -430,7 +430,7 @@ export function TransactionForm({
   }
 
   /*
-   * PENGHASILAN / PENGELUARAN FORM
+   * PEMASUKAN / PENGELUARAN FORM
    */
   return (
     <div className="space-y-6">
@@ -522,7 +522,7 @@ export function TransactionForm({
         {isPending
           ? "Menyimpan..."
           : type === "income"
-            ? "Simpan Penghasilan"
+            ? "Simpan Pemasukan"
             : "Simpan Pengeluaran"}
       </Button>
 

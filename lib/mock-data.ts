@@ -15,7 +15,7 @@ import type { NavItem } from "./types";
  * NOTE on the numbers below:
  * - Total Pengeluaran (Rp120.000, 69%), Sisa Saldo (Rp0, 0%) are reproduced
  *   exactly as shown on-screen.
- * - Both individual incomes and Total Penghasilan are masked (dots) in the
+ * - Both individual incomes and Total Pemasukan are masked (dots) in the
  *   screenshot and never revealed, so their amounts here are placeholders.
  * - Those placeholders are deliberately NOT used to derive the two
  *   percentages above, because the screenshot's own figures don't reconcile:
@@ -91,7 +91,7 @@ export const monthOptions = [
 export const quickActions = [
   {
     id: "income",
-    label: "Update Penghasilan",
+    label: "Update Pemasukan",
     icon: Wallet,
     href: "/income",
   },

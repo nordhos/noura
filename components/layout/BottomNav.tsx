@@ -117,7 +117,7 @@ export function BottomNav({
         onReturn={() => setReturnOpen(true)}
       />
 
-      {/* Penghasilan */}
+      {/* Pemasukan */}
       <TransactionSheet
         type="income"
         open={incomeOpen}

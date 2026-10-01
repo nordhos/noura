@@ -20,7 +20,7 @@ export function TransactionSheet({
       onClose={onClose}
       title={
         type === "income"
-          ? "Catat Penghasilan"
+          ? "Catat Pemasukan"
           : type === "expense"
             ? "Catat Pengeluaran"
             : type === "transfer"

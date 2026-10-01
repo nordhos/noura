@@ -18,7 +18,7 @@ export function TotalIncomeCard({
     <Card>
       <div className="mb-4 flex items-center gap-2">
         <span className="text-sm text-ink-muted">
-          Total Penghasilan
+          Total Pemasukan
         </span>
 
         <RevealToggle

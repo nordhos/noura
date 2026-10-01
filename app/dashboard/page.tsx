@@ -114,7 +114,7 @@ export default function DashboardPage() {
             return (
               <IncomeCard
                 key={profile.id}
-                label={`Penghasilan ${profile.name}`}
+                label={`Pemasukan ${profile.name}`}
                 amount={profile.income}
                 progress={progress}
               />

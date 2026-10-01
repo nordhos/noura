@@ -81,7 +81,7 @@ export function BalanceBreakdownSheet({
 
             <div className="divide-y divide-zinc-800/80">
               <BreakdownRow
-                label="Penghasilan"
+                label="Pemasukan"
                 amount={profile.income}
               />
 

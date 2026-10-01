@@ -120,7 +120,7 @@ export function FloatingActionMenu({
                 </div>
 
                 <span className="font-medium text-white">
-                  Catat Penghasilan
+                  Catat Pemasukan
                 </span>
               </div>
 
